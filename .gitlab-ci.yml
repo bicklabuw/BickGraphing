@@ -1,0 +1,39 @@
+stages:
+  - lint
+  - build
+
+lint:
+  stage: lint
+  image: node:18
+  script:
+    - npm ci
+    - npm run lint
+  tags:
+    - docker
+  only:
+    - merge_requests
+    - main
+
+typescript:
+  stage: lint
+  image: node:18
+  script:
+    - npm ci
+    - npm run check
+  tags:
+    - docker
+  only:
+    - merge_requests
+    - main
+
+build:
+  stage: build
+  image: node:18
+  script:
+    - npm ci
+    - npm run build
+  tags:
+    - docker
+  only:
+    - merge_requests
+    - main
