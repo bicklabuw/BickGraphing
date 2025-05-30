@@ -1,0 +1,435 @@
+<script lang="ts">
+	import { onMount, tick } from 'svelte';
+	import { initFFmpeg } from '$lib/utils/audioProcessing';
+	import type { FFmpeg } from '@ffmpeg/ffmpeg';
+	import { fetchFile } from '@ffmpeg/util';
+	import Waveform from './waveform.svelte';
+	import Spectrogram from './spectrogram.svelte';
+	import Rangeslider from './rangeslider.svelte';
+	import Viewselector from './viewselector.svelte';
+	import Rangeinput from './rangeinput.svelte';
+	import Togglebutton from './togglebutton.svelte';
+	import Filelist from './filelist.svelte';
+	import Fileselector from './fileselector.svelte';
+
+	let debug = true;
+	let isProcessing = false;
+	let processingProgress = 0;
+	let isFFmpegReady = false;
+
+	let ffmpeg: FFmpeg | null = null;
+	let selectedFiles: { id: string; name: string }[] = [];
+
+	let originalAudioFiles: File[] = [];
+	let audioDataArray: { name: string; inputName: string }[] = [];
+	let waveformDataMap: Record<string, { time: number; amplitude: number }[]> = {};
+	let audioDurationMap: Record<string, number> = {};
+	let waveformVersion = 0;
+	let spectrogramVersion = 0;
+
+	let startTime = 0;
+	let endTime = 10;
+	let minAmp = -0.01;
+	let maxAmp = 0.01;
+	let minFreq = 0;
+	let maxFreq = 5000;
+	let showWaveform = false;
+	let showSpectrogram = false;
+	let showDetails = false;
+	let showSliders = false;
+
+	onMount(async () => {
+		try {
+			ffmpeg = await initFFmpeg();
+			isFFmpegReady = true;
+			if (debug) console.log('FFmpeg mounted');
+			await tick();
+		} catch (error) {
+			console.error('Failed to initialize FFmpeg:', error);
+		}
+	});
+
+	async function processFiles(files: FileList | File[]) {
+		const newFiles = Array.from(files).filter(
+			(file) => !selectedFiles.some((f) => f.name === file.name)
+		);
+
+		if (!newFiles.length) return;
+
+		isProcessing = true;
+
+		await Promise.all(
+			newFiles.map(async (file) => {
+				if (!ffmpeg) return;
+				const inputName = `input_${file.name.replace(/[^a-zA-Z0-9]/g, '_')}`;
+				const data = await fetchFile(file);
+				await ffmpeg.writeFile(inputName, data);
+
+				const arrayBuffer = await file.arrayBuffer();
+				const audioBuffer = await new AudioContext().decodeAudioData(arrayBuffer);
+				audioDurationMap[file.name] = audioBuffer.duration;
+
+				originalAudioFiles.push(file);
+				audioDataArray.push({ name: file.name, inputName });
+				selectedFiles = [...selectedFiles, { id: crypto.randomUUID(), name: file.name }];
+			})
+		);
+
+		isProcessing = false;
+		await tick();
+	}
+
+	function handleReorder({ detail }: CustomEvent) {
+		selectedFiles = detail.items;
+
+		originalAudioFiles = selectedFiles
+			.map((f) => originalAudioFiles.find((of) => of.name === f.name))
+			.filter((f): f is File => f !== undefined);
+
+		audioDataArray = selectedFiles
+			.map((f) => audioDataArray.find((a) => a.name === f.name))
+			.filter((a): a is { name: string; inputName: string } => a !== undefined);
+	}
+
+	function removeFile(name: string) {
+		selectedFiles = selectedFiles.filter((f) => f.name !== name);
+		originalAudioFiles = originalAudioFiles.filter((f) => f.name !== name);
+		audioDataArray = audioDataArray.filter((a) => a.name !== name);
+		delete waveformDataMap[name];
+		delete audioDurationMap[name];
+	}
+
+	function extractWaveformData(audioBuffer: AudioBuffer, start: number, end: number) {
+		const sampleRate = audioBuffer.sampleRate;
+		const startSample = Math.floor(start * sampleRate);
+		const endSample = Math.min(Math.floor(end * sampleRate), audioBuffer.length);
+		const channelData = audioBuffer.getChannelData(0);
+		const maxPoints = 2000;
+		const totalSamples = endSample - startSample;
+		const step = totalSamples > maxPoints ? Math.floor(totalSamples / maxPoints) : 1;
+		const waveform = [];
+
+		for (let i = startSample; i < endSample; i += step) {
+			waveform.push({
+				time: i / sampleRate,
+				amplitude: channelData[i]
+			});
+		}
+		return waveform;
+	}
+
+	async function generateVisualizations() {
+		if (!isFFmpegReady || !ffmpeg) {
+			alert(
+				'Please load FFmpeg first. - If you are reading this error, the site will not be able to graph files'
+			);
+			return;
+		}
+
+		if (startTime >= endTime) {
+			console.warn('Invalid time range: start >= end');
+			return;
+		}
+
+		isProcessing = true;
+		processingProgress = 0;
+
+		const audioContext = new AudioContext();
+
+		for (let i = 0; i < originalAudioFiles.length; i++) {
+			const file = originalAudioFiles[i];
+			const arrayBuffer = await file.arrayBuffer();
+			const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+			audioDurationMap[file.name] = audioBuffer.duration;
+
+			const duration = audioBuffer.duration;
+			audioDurationMap[file.name] = duration;
+			if (startTime >= duration) {
+				console.warn(
+					`Skipping ${file.name}: selected time range [${startTime}, ${endTime}] is outside duration (${duration})`
+				);
+				continue;
+			}
+
+			if (showWaveform) {
+				waveformDataMap[file.name] = extractWaveformData(audioBuffer, startTime, endTime);
+			}
+
+			if (!showWaveform) {
+				delete waveformDataMap[file.name];
+			}
+			processingProgress = Math.round(((i + 1) / originalAudioFiles.length) * 100);
+		}
+
+		isProcessing = false;
+		waveformVersion += 1;
+		await tick();
+	}
+
+	function updateTimeRange(start: number, end: number) {
+		startTime = start;
+		endTime = end;
+		generateVisualizations();
+	}
+
+	function handleTimeChange(event: CustomEvent<{ values: number[] }>) {
+		const [start, end] = event.detail.values;
+		startTime = start;
+		endTime = end;
+		generateVisualizations();
+	}
+
+	function handleAmpChange(event: CustomEvent<{ values: number[] }>) {
+		const [min, max] = event.detail.values;
+		minAmp = min;
+		maxAmp = max;
+		waveformVersion += 1;
+	}
+
+	function handleFreqChange(event: CustomEvent<{ values: number[] }>) {
+		const [min, max] = event.detail.values;
+		minFreq = min;
+		maxFreq = max;
+		spectrogramVersion += 1;
+	}
+
+	function handleVisChange(wave: boolean, spec: boolean) {
+		const changedWaveform = wave !== showWaveform;
+		const changedSpectrogram = spec !== showSpectrogram;
+
+		showWaveform = wave;
+		showSpectrogram = spec;
+
+		if (audioDataArray.length > 0 && (wave || spec)) {
+			generateVisualizations();
+		}
+
+		if (changedWaveform) waveformVersion += 1;
+		if (changedSpectrogram) spectrogramVersion += 1;
+	}
+</script>
+
+<div class="mb-6">
+	<Fileselector
+		disabled={!isFFmpegReady || isProcessing}
+		on:select={(e) => processFiles(e.detail)}
+	/>
+
+	<Filelist {selectedFiles} {audioDurationMap} {removeFile} {handleReorder} />
+
+	<Rangeinput
+		label="Time Range"
+		unit="(seconds)"
+		minLabel="Start Time"
+		maxLabel="End Time"
+		minValue={startTime}
+		maxValue={endTime}
+		step={0.1}
+		onChange={(min, max) => {
+			startTime = min;
+			endTime = max;
+			updateTimeRange(startTime, endTime);
+		}}
+	/>
+
+	<Rangeinput
+		label="Amplitude Range"
+		unit=""
+		minLabel="Min Amplitude"
+		maxLabel="Max Amplitude"
+		minValue={minAmp}
+		maxValue={maxAmp}
+		step={0.01}
+		onChange={(min, max) => {
+			minAmp = min;
+			maxAmp = max;
+			generateVisualizations();
+		}}
+	/>
+
+	<Rangeinput
+		label="Frequency Range"
+		unit="(Hz)"
+		minLabel="Min Frequency"
+		maxLabel="Max Frequency"
+		minValue={minFreq}
+		maxValue={maxFreq}
+		step={10}
+		onChange={(min, max) => {
+			minFreq = min;
+			maxFreq = max;
+			generateVisualizations();
+		}}
+	/>
+
+	{#if selectedFiles.length > 0}
+		<div class="mt-6">
+			<Viewselector {showWaveform} {showSpectrogram} onChange={handleVisChange} />
+		</div>
+	{/if}
+
+	{#if isProcessing}
+		<div class="mt-4 rounded-lg bg-gray-100 p-4">
+			<p class="font-medium">Processing audio files...</p>
+			<div class="h-4 w-full rounded-full bg-gray-200">
+				<div
+					class="h-4 rounded-full bg-blue-600 transition-all duration-300"
+					style="width: {processingProgress}%"
+				></div>
+			</div>
+			<p class="mt-1 text-sm text-gray-600">{processingProgress}% complete</p>
+		</div>
+	{/if}
+
+	{#if (showWaveform || showSpectrogram) && audioDataArray.length > 0}
+		{#if showWaveform}
+			{#each audioDataArray as audioFile (audioFile.name)}
+				<div class="mt-6 overflow-hidden rounded-lg border bg-gray-100 p-4 shadow">
+					<div class="mb-4 flex items-center justify-between">
+						<h3
+							class="animate-fade-in bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
+						>
+							{audioFile.name} — Waveform
+						</h3>
+						<div class="flex gap-2">
+							<Togglebutton
+								label="Details"
+								show={showDetails}
+								onToggle={() => (showDetails = !showDetails)}
+							/>
+							<Togglebutton
+								label="Sliders"
+								show={showSliders}
+								onToggle={() => (showSliders = !showSliders)}
+							/>
+						</div>
+					</div>
+
+					{#if showDetails}
+						<div class="mt-2 text-sm text-gray-600">
+							<p class="font-medium text-gray-800">
+								Rendering Details for <span class="font-semibold text-green-700"
+									>{audioFile.name}</span
+								>
+							</p>
+							<ul class="mt-1 list-inside list-disc space-y-0.5">
+								<li><span class="font-medium">Start Time:</span> {startTime}s</li>
+								<li><span class="font-medium">End Time:</span> {endTime}s</li>
+								<li><span class="font-medium">Amplitude Range:</span> {minAmp} → {maxAmp}</li>
+								<li>
+									<span class="font-medium">Audio Length:</span>
+									{audioDurationMap[audioFile.name]?.toFixed(2)} seconds
+								</li>
+							</ul>
+						</div>
+					{/if}
+
+					{#key `waveform-${audioFile.inputName}-${waveformVersion}`}
+						<Waveform
+							waveformData={waveformDataMap[audioFile.name] ?? []}
+							{startTime}
+							{endTime}
+							{minAmp}
+							{maxAmp}
+						/>
+
+						{#if showSliders}
+							<Rangeslider
+								title="Time"
+								min={0}
+								max={audioDurationMap[audioFile.name] ?? 100}
+								start={[startTime, endTime]}
+								on:change={handleTimeChange}
+							/>
+							<Rangeslider
+								title="Amplitude"
+								min={-0.01}
+								max={0.01}
+								start={[minAmp, maxAmp]}
+								step={0.001}
+								on:change={handleAmpChange}
+							/>
+						{/if}
+					{/key}
+				</div>
+			{/each}
+		{/if}
+
+		{#if showSpectrogram}
+			{#each audioDataArray as audioFile (audioFile.name)}
+				<div class="mt-6 overflow-hidden rounded-lg border bg-gray-100 p-4 shadow">
+					<div class="mb-4 flex items-center justify-between">
+						<h3
+							class="animate-fade-in bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
+						>
+							{audioFile.name} — Spectrogram
+						</h3>
+						<div class="flex gap-2">
+							<Togglebutton
+								label="Details"
+								show={showDetails}
+								onToggle={() => (showDetails = !showDetails)}
+							/>
+							<Togglebutton
+								label="Sliders"
+								show={showSliders}
+								onToggle={() => (showSliders = !showSliders)}
+							/>
+						</div>
+					</div>
+
+					{#if showDetails}
+						<div class="mt-2 text-sm text-gray-600">
+							<p class="font-medium text-gray-800">
+								Rendering Details for <span class="font-semibold text-green-700"
+									>{audioFile.name}</span
+								>
+							</p>
+							<ul class="mt-1 list-inside list-disc space-y-0.5">
+								<li><span class="font-medium">Start Time:</span> {startTime}s</li>
+								<li><span class="font-medium">End Time:</span> {endTime}s</li>
+								<li>
+									<span class="font-medium">Frequency Range:</span>
+									{minFreq} Hz → {maxFreq} Hz
+								</li>
+								<li>
+									<span class="font-medium">Audio Length:</span>
+									{audioDurationMap[audioFile.name]?.toFixed(2)} seconds
+								</li>
+							</ul>
+						</div>
+					{/if}
+
+					{#key `spectrogram-${audioFile.inputName}-${spectrogramVersion}`}
+						<Spectrogram
+							{ffmpeg}
+							inputFileName={audioFile.inputName}
+							{startTime}
+							{endTime}
+							{minFreq}
+							{maxFreq}
+						/>
+
+						{#if showSliders}
+							<Rangeslider
+								title="Time"
+								min={0}
+								max={audioDurationMap[audioFile.name] ?? 100}
+								start={[startTime, endTime]}
+								on:change={handleTimeChange}
+							/>
+							<Rangeslider
+								title="Frequency"
+								min={0}
+								max={44000}
+								start={[minFreq, maxFreq]}
+								step={10}
+								on:change={handleFreqChange}
+							/>
+						{/if}
+					{/key}
+				</div>
+			{/each}
+		{/if}
+	{/if}
+</div>

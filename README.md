@@ -43,6 +43,9 @@ npm run dev
 npm run dev -- --open
 ```
 
+rm -rf .svelte-kit/ node_modules/.vite/ dist/
+pnpm dev # or npm run dev / yarn dev
+
 ## Building
 
 To create a production version of your app:
