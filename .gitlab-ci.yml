@@ -1,7 +1,6 @@
 stages:
   - lint
   - build
-  - deploy
 
 lint:
   stage: lint
