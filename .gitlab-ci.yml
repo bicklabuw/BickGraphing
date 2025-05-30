@@ -57,7 +57,8 @@ deploy:
     # clone the repo and switch to the build-only branch
     - git config --global user.name "$GITLAB_USER_NAME"
     - git config --global user.email "$GITLAB_USER_EMAIL"
-    - git clone --depth=1 --branch=build-only "$CI_REPOSITORY_URL" temp || git clone --depth=1 "$CI_REPOSITORY_URL" temp
+    - git clone --depth=1 --branch=build-only https://$CI_DEPLOY_USER:$CI_DEPLOY_TOKEN@git.doit.wisc.edu/insecteavesdropper/graphing/IE_Graphing.git temp || git clone --depth=1 https://$CI_DEPLOY_USER:$CI_DEPLOY_TOKEN@git.doit.wisc.edu/insecteavesdropper/graphing/IE_Graphing.git temp
+
     - cd temp
     - git checkout -B build-only
 
