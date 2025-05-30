@@ -38,6 +38,9 @@ build:
   only:
     - merge_requests
     - main
+  artifacts:
+    paths:
+      - build/
 
 deploy:
   stage: deploy
