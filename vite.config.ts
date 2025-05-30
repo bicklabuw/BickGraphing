@@ -1,10 +1,9 @@
-import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit()],
+	plugins: [sveltekit()],
 	optimizeDeps: {
-		exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'] // Prevent Vite from optimizing FFmpeg
+		exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util', 'clsx']
 	}
 });
