@@ -47,6 +47,10 @@ deploy:
   script:
     - echo "Deploying build to 'build-only' branch..."
 
+    # save build somewhere else
+    - mkdir -p /tmp/build-copy
+    - cp -r build/* /tmp/build-copy/
+
     # clone the repo and switch to the build-only branch
     - git config --global user.name "$GITLAB_USER_NAME"
     - git config --global user.email "$GITLAB_USER_EMAIL"
@@ -54,9 +58,11 @@ deploy:
     - cd temp
     - git checkout -B build-only
 
-    # remove all old files, copy new build, and clean .gitignore
+    # remove old files and copy in fresh build
     - rm -rf *
-    - cp -r ../build/* .
+    - cp -r /tmp/build-copy/* .
+
+    # clean .gitignore if needed
     - find . -name ".gitignore" -delete
 
     # commit and push
