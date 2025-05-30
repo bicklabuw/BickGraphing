@@ -160,7 +160,7 @@
 			.style('text-anchor', 'middle')
 			.text('Frequency (Hz)');
 
-		// 🎨 Color scale bar
+		// Color scale bar
 		const legendHeight = height;
 		const legendWidth = 20;
 
@@ -215,5 +215,5 @@
 </script>
 
 <div bind:this={container} class="spectrogram">
-	<p class="mt-2 text-xs text-gray-500 italic">Spectrogram status: {status}</p>
+	<p class="mt-2 text-xs italic text-gray-500">Spectrogram status: {status}</p>
 </div>
