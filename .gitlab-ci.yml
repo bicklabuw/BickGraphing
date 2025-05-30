@@ -63,6 +63,8 @@ deploy:
     - git add .
     - git commit -m "Deploy from $CI_COMMIT_REF_NAME ($CI_COMMIT_SHORT_SHA)" || echo "Nothing to commit"
     - git push origin build-only
+  tags:
+    - docker
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: always
