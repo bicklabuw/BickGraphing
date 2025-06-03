@@ -82,6 +82,7 @@ deploy:
     - when: never
 
 create-pages:
+  stage: create-pages
   pages:
     # The folder that contains the files to be exposed at the Page URL
     publish: build
