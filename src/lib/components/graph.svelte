@@ -24,6 +24,7 @@
 	let audioDataArray: { name: string; inputName: string }[] = [];
 	let waveformDataMap: Record<string, { time: number; amplitude: number }[]> = {};
 	let audioDurationMap: Record<string, number> = {};
+	let timeRangeMap: Record<string, { start: number; end: number }> = {};
 	let waveformVersion = 0;
 	let spectrogramVersion = 0;
 
@@ -68,6 +69,10 @@
 				const arrayBuffer = await file.arrayBuffer();
 				const audioBuffer = await new AudioContext().decodeAudioData(arrayBuffer);
 				audioDurationMap[file.name] = audioBuffer.duration;
+				timeRangeMap[file.name] = {
+					start: 0,
+					end: audioBuffer.duration
+				};
 
 				originalAudioFiles.push(file);
 				audioDataArray.push({ name: file.name, inputName });
@@ -141,18 +146,19 @@
 			const arrayBuffer = await file.arrayBuffer();
 			const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 			audioDurationMap[file.name] = audioBuffer.duration;
-
+			const { start, end } = timeRangeMap[file.name] ?? { start: 0, end: audioBuffer.duration };
 			const duration = audioBuffer.duration;
 			audioDurationMap[file.name] = duration;
-			if (startTime >= duration) {
+
+			if (start >= duration) {
 				console.warn(
-					`Skipping ${file.name}: selected time range [${startTime}, ${endTime}] is outside duration (${duration})`
+					`Skipping ${file.name}: selected time range [${start}, ${end}] is outside duration (${duration})`
 				);
 				continue;
 			}
 
 			if (showWaveform) {
-				waveformDataMap[file.name] = extractWaveformData(audioBuffer, startTime, endTime);
+				waveformDataMap[file.name] = extractWaveformData(audioBuffer, start, end);
 			}
 
 			if (!showWaveform) {
@@ -172,10 +178,9 @@
 		generateVisualizations();
 	}
 
-	function handleTimeChange(event: CustomEvent<{ values: number[] }>) {
+	function handleTimeChange(event: CustomEvent<{ values: number[] }>, fileName: string) {
 		const [start, end] = event.detail.values;
-		startTime = start;
-		endTime = end;
+		timeRangeMap[fileName] = { start, end };
 		generateVisualizations();
 	}
 
@@ -313,8 +318,14 @@
 								>
 							</p>
 							<ul class="mt-1 list-inside list-disc space-y-0.5">
-								<li><span class="font-medium">Start Time:</span> {startTime}s</li>
-								<li><span class="font-medium">End Time:</span> {endTime}s</li>
+								<li>
+									<span class="font-medium">Start Time:</span>
+									{timeRangeMap[audioFile.name]?.start ?? 0}s
+								</li>
+								<li>
+									<span class="font-medium">End Time:</span>
+									{timeRangeMap[audioFile.name]?.end ?? 10}s
+								</li>
 								<li><span class="font-medium">Amplitude Range:</span> {minAmp} → {maxAmp}</li>
 								<li>
 									<span class="font-medium">Audio Length:</span>
@@ -327,8 +338,8 @@
 					{#key `waveform-${audioFile.inputName}-${waveformVersion}`}
 						<Waveform
 							waveformData={waveformDataMap[audioFile.name] ?? []}
-							{startTime}
-							{endTime}
+							startTime={timeRangeMap[audioFile.name]?.start ?? 0}
+							endTime={timeRangeMap[audioFile.name]?.end ?? 10}
 							{minAmp}
 							{maxAmp}
 						/>
@@ -338,8 +349,11 @@
 								title="Time"
 								min={0}
 								max={audioDurationMap[audioFile.name] ?? 100}
-								start={[startTime, endTime]}
-								on:change={handleTimeChange}
+								start={[
+									timeRangeMap[audioFile.name]?.start ?? 0,
+									timeRangeMap[audioFile.name]?.end ?? 10
+								]}
+								on:change={(e) => handleTimeChange(e, audioFile.name)}
 							/>
 							<Rangeslider
 								title="Amplitude"
@@ -404,8 +418,8 @@
 						<Spectrogram
 							{ffmpeg}
 							inputFileName={audioFile.inputName}
-							{startTime}
-							{endTime}
+							startTime={timeRangeMap[audioFile.name]?.start ?? 0}
+							endTime={timeRangeMap[audioFile.name]?.end ?? 10}
 							{minFreq}
 							{maxFreq}
 						/>
@@ -415,8 +429,11 @@
 								title="Time"
 								min={0}
 								max={audioDurationMap[audioFile.name] ?? 100}
-								start={[startTime, endTime]}
-								on:change={handleTimeChange}
+								start={[
+									timeRangeMap[audioFile.name]?.start ?? 0,
+									timeRangeMap[audioFile.name]?.end ?? 10
+								]}
+								on:change={(e) => handleTimeChange(e, audioFile.name)}
 							/>
 							<Rangeslider
 								title="Frequency"
