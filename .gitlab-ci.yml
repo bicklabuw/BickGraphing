@@ -83,6 +83,7 @@ deploy:
 
 pages:
   stage: create-pages
+  image: node:18
   pages:
     # The folder that contains the files to be exposed at the Page URL
     publish: build
