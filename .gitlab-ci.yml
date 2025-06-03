@@ -83,20 +83,18 @@ deploy:
 
 pages:
   stage: create-pages
-  pages:
-    # The folder that contains the files to be exposed at the Page URL
-    publish: build
-  tags:
-    - docker
+  image: node:18
   needs:
     - job: build
       artifacts: true
-  rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-  # Functions that should be executed before the build script is run
-  before_script:
-    - npm ci
   script:
-    - npm run build
     - mkdir -p public
     - cp -r build/* public/
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH'
+  tags:
+    - docker
+
