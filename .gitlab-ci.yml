@@ -2,6 +2,7 @@ stages:
   - lint
   - build
   - deploy
+  - create-pages
 
 lint:
   stage: lint
@@ -79,3 +80,20 @@ deploy:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: always
     - when: never
+
+create-pages:
+  stage: create-pages
+  pages:
+    # The folder that contains the files to be exposed at the Page URL
+    publish: build
+  tags:
+    - docker
+  rules:
+    # This ensures that only pushes to the default branch will trigger
+    # a pages deploy
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  # Functions that should be executed before the build script is run
+  before_script:
+    - npm ci
+  script:
+    - npm run build
