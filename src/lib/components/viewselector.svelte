@@ -7,6 +7,7 @@
 		if (value === 'waveform') onChange(true, false);
 		else if (value === 'spectrogram') onChange(false, true);
 		else if (value === 'both') onChange(true, true);
+		else if (value === 'none') onChange(false, false);
 	}
 </script>
 
@@ -18,6 +19,21 @@
 	</h3>
 
 	<div class="flex flex-col gap-2">
+		<label class="flex cursor-pointer items-center gap-3">
+			<input
+				type="radio"
+				name="view"
+				value="none"
+				class="peer hidden"
+				checked={!showWaveform && !showSpectrogram}
+				on:change={() => handleSelection('none')}
+			/>
+			<span
+				class="h-4 w-4 rounded-full border border-gray-600 peer-checked:border-purple-600 peer-checked:ring-2 peer-checked:ring-purple-500"
+			></span>
+			<span class="text-sm text-gray-800 peer-checked:font-semibold">No Selection</span>
+		</label>
+
 		<label class="flex cursor-pointer items-center gap-3">
 			<input
 				type="radio"
