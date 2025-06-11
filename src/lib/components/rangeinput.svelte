@@ -10,7 +10,7 @@
 	export let onChange: (min: number, max: number) => void;
 
 	function updateMin(val: string) {
-		onChange(maxValue, parseFloat(val));
+		onChange(parseFloat(val), maxValue);
 	}
 	function updateMax(val: string) {
 		onChange(minValue, parseFloat(val));
