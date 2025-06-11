@@ -1,4 +1,5 @@
 <script lang="ts">
+	export let spectrogramOnline: boolean = false;
 	export let showWaveform: boolean;
 	export let showSpectrogram: boolean;
 	export let onChange: (waveform: boolean, spectrogram: boolean) => void;
@@ -49,7 +50,11 @@
 			<span class="text-sm text-gray-800 peer-checked:font-semibold">Waveform</span>
 		</label>
 
-		<label class="flex cursor-pointer items-center gap-3">
+		<label
+			class="flex cursor-pointer items-center gap-3"
+			class:opacity-50={!spectrogramOnline}
+			class:pointer-events-none={!spectrogramOnline}
+		>
 			<input
 				type="radio"
 				name="view"
@@ -61,22 +66,31 @@
 			<span
 				class="h-4 w-4 rounded-full border border-gray-600 peer-checked:border-purple-600 peer-checked:ring-2 peer-checked:ring-purple-500"
 			></span>
-			<span class="text-sm text-gray-800 peer-checked:font-semibold">Spectrogram</span>
+			<span class="text-sm text-gray-800 peer-checked:font-semibold"
+				>Spectrogram (Coming Soon! Reworking for smoother performance!)</span
+			>
 		</label>
 
-		<label class="flex cursor-pointer items-center gap-3">
+		<label
+			class="flex cursor-pointer items-center gap-3"
+			class:opacity-50={!spectrogramOnline}
+			class:pointer-events-none={!spectrogramOnline}
+		>
 			<input
 				type="radio"
 				name="view"
 				value="both"
 				class="peer hidden"
+				disabled={!spectrogramOnline}
 				checked={showWaveform && showSpectrogram}
 				on:change={() => handleSelection('both')}
 			/>
 			<span
 				class="h-4 w-4 rounded-full border border-gray-600 peer-checked:border-purple-600 peer-checked:ring-2 peer-checked:ring-purple-500"
 			></span>
-			<span class="text-sm text-gray-800 peer-checked:font-semibold">Both</span>
+			<span class="text-sm text-gray-800 peer-checked:font-semibold"
+				>Both Waveform and Spectrogram (Coming Soon! Reworking for smoother performance!)</span
+			>
 		</label>
 	</div>
 </div>
