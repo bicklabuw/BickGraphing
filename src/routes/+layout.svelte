@@ -5,12 +5,16 @@
 </script>
 
 <div
-	class="min-h-screen bg-gradient-to-br from-[#0d3b2e] to-[#1b5e3b] font-sans tracking-tight text-gray-800 antialiased"
+	class="flex min-h-screen flex-col bg-gradient-to-br from-[#0d3b2e] to-[#1b5e3b] font-sans tracking-tight text-gray-800 antialiased"
 >
 	<Navbar />
 
-	<main class="mx-auto max-w-5xl px-8 py-5">
-		<div class="rounded-2xl border border-white/10 bg-[#e5e7ebcc] p-8 shadow-xl backdrop-blur-sm">
+	<main
+		class="mx-auto w-full flex-grow px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8 lg:px-12 lg:py-10"
+	>
+		<div
+			class="rounded-2xl border border-white/10 bg-[#e5e7ebcc] p-4 shadow-xl backdrop-blur-sm sm:p-6 md:p-8"
+		>
 			<slot />
 		</div>
 	</main>
