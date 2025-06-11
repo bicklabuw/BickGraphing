@@ -4,6 +4,7 @@
 	import type { FFmpeg } from '@ffmpeg/ffmpeg';
 	import { fetchFile } from '@ffmpeg/util';
 	import Waveform from './waveform.svelte';
+	import Miniwaveform from './miniwaveform.svelte';
 	import Spectrogram from './spectrogram.svelte';
 	import Rangeslider from './rangeslider.svelte';
 	import Viewselector from './viewselector.svelte';
@@ -25,6 +26,9 @@
 	let waveformDataMap: Record<string, { time: number; amplitude: number }[]> = {};
 	let audioDurationMap: Record<string, number> = {};
 	let timeRangeMap: Record<string, { start: number; end: number }> = {};
+	let ampRangeMap: Record<string, { min: number; max: number }> = {};
+	let freqRangeMap: Record<string, { min: number; max: number }> = {};
+
 	let waveformVersion = 0;
 	let spectrogramVersion = 0;
 
@@ -172,29 +176,50 @@
 		await tick();
 	}
 
-	function updateTimeRange(start: number, end: number) {
-		startTime = start;
-		endTime = end;
-		generateVisualizations();
-	}
-
 	function handleTimeChange(event: CustomEvent<{ values: number[] }>, fileName: string) {
 		const [start, end] = event.detail.values;
 		timeRangeMap[fileName] = { start, end };
-		generateVisualizations();
+		if (showWaveform) waveformVersion += 1;
+		if (showSpectrogram) spectrogramVersion += 1;
 	}
 
-	function handleAmpChange(event: CustomEvent<{ values: number[] }>) {
+	function handleAmpChange(event: CustomEvent<{ values: number[] }>, fileName: string) {
 		const [min, max] = event.detail.values;
-		minAmp = min;
-		maxAmp = max;
+		ampRangeMap[fileName] = { min, max };
 		waveformVersion += 1;
 	}
 
-	function handleFreqChange(event: CustomEvent<{ values: number[] }>) {
+	function handleFreqChange(event: CustomEvent<{ values: number[] }>, fileName: string) {
 		const [min, max] = event.detail.values;
+		freqRangeMap[fileName] = { min, max };
+		spectrogramVersion += 1;
+	}
+
+	function handleAllTimeChange(start: number, end: number) {
+		startTime = start;
+		endTime = end;
+		for (const { name } of audioDataArray) {
+			timeRangeMap[name] = { start, end };
+		}
+		if (showWaveform) waveformVersion += 1;
+		if (showSpectrogram) spectrogramVersion += 1;
+	}
+
+	function handleAllAmpChange(min: number, max: number) {
+		minAmp = min;
+		maxAmp = max;
+		for (const { name } of audioDataArray) {
+			ampRangeMap[name] = { min, max };
+		}
+		waveformVersion += 1;
+	}
+
+	function handleAllFreqChange(min: number, max: number) {
 		minFreq = min;
 		maxFreq = max;
+		for (const { name } of audioDataArray) {
+			freqRangeMap[name] = { min, max };
+		}
 		spectrogramVersion += 1;
 	}
 
@@ -230,11 +255,7 @@
 		minValue={startTime}
 		maxValue={endTime}
 		step={0.1}
-		onChange={(min, max) => {
-			startTime = min;
-			endTime = max;
-			updateTimeRange(startTime, endTime);
-		}}
+		onChange={handleAllTimeChange}
 	/>
 
 	<Rangeinput
@@ -245,11 +266,7 @@
 		minValue={minAmp}
 		maxValue={maxAmp}
 		step={0.01}
-		onChange={(min, max) => {
-			minAmp = min;
-			maxAmp = max;
-			generateVisualizations();
-		}}
+		onChange={handleAllAmpChange}
 	/>
 
 	<Rangeinput
@@ -260,16 +277,12 @@
 		minValue={minFreq}
 		maxValue={maxFreq}
 		step={10}
-		onChange={(min, max) => {
-			minFreq = min;
-			maxFreq = max;
-			generateVisualizations();
-		}}
+		onChange={handleAllFreqChange}
 	/>
 
 	{#if selectedFiles.length > 0}
 		<div class="mt-6">
-			<Viewselector {showWaveform} {showSpectrogram} onChange={handleVisChange} />
+			<Viewselector bind:showWaveform bind:showSpectrogram onChange={handleVisChange} />
 		</div>
 	{/if}
 
@@ -283,6 +296,29 @@
 				></div>
 			</div>
 			<p class="mt-1 text-sm text-gray-600">{processingProgress}% complete</p>
+		</div>
+	{/if}
+
+	{#if showWaveform}
+		<div class="mt-6 grid grid-cols-4 gap-4">
+			{#each audioDataArray as audioFile (audioFile.name)}
+				<div class="rounded border bg-white p-2 shadow-sm">
+					<p class="mb-2 whitespace-normal break-words text-xs font-semibold">
+						{audioFile.name}
+					</p>
+					<div class="flex h-24 items-center justify-center">
+						{#key `mini-${audioFile.name}-${waveformVersion}`}
+							<Miniwaveform
+								waveformData={waveformDataMap[audioFile.name] ?? []}
+								startTime={timeRangeMap[audioFile.name]?.start ?? 0}
+								endTime={timeRangeMap[audioFile.name]?.end ?? 10}
+								minAmp={ampRangeMap[audioFile.name]?.min ?? minAmp}
+								maxAmp={ampRangeMap[audioFile.name]?.max ?? maxAmp}
+							/>
+						{/key}
+					</div>
+				</div>
+			{/each}
 		</div>
 	{/if}
 
@@ -326,7 +362,11 @@
 									<span class="font-medium">End Time:</span>
 									{timeRangeMap[audioFile.name]?.end ?? 10}s
 								</li>
-								<li><span class="font-medium">Amplitude Range:</span> {minAmp} → {maxAmp}</li>
+								<li>
+									<span class="font-medium">Amplitude Range:</span>
+									{ampRangeMap[audioFile.name]?.min ?? minAmp} → {ampRangeMap[audioFile.name]
+										?.max ?? maxAmp}
+								</li>
 								<li>
 									<span class="font-medium">Audio Length:</span>
 									{audioDurationMap[audioFile.name]?.toFixed(2)} seconds
@@ -336,33 +376,39 @@
 					{/if}
 
 					{#key `waveform-${audioFile.inputName}-${waveformVersion}`}
-						<Waveform
-							waveformData={waveformDataMap[audioFile.name] ?? []}
-							startTime={timeRangeMap[audioFile.name]?.start ?? 0}
-							endTime={timeRangeMap[audioFile.name]?.end ?? 10}
-							{minAmp}
-							{maxAmp}
-						/>
-
+						<div class="mx-auto flex w-fit flex-col items-center">
+							<Waveform
+								waveformData={waveformDataMap[audioFile.name] ?? []}
+								startTime={timeRangeMap[audioFile.name]?.start ?? 0}
+								endTime={timeRangeMap[audioFile.name]?.end ?? 10}
+								minAmp={ampRangeMap[audioFile.name]?.min ?? -0.01}
+								maxAmp={ampRangeMap[audioFile.name]?.max ?? 0.01}
+							/>
+						</div>
 						{#if showSliders}
-							<Rangeslider
-								title="Time"
-								min={0}
-								max={audioDurationMap[audioFile.name] ?? 100}
-								start={[
-									timeRangeMap[audioFile.name]?.start ?? 0,
-									timeRangeMap[audioFile.name]?.end ?? 10
-								]}
-								on:change={(e) => handleTimeChange(e, audioFile.name)}
-							/>
-							<Rangeslider
-								title="Amplitude"
-								min={-0.01}
-								max={0.01}
-								start={[minAmp, maxAmp]}
-								step={0.001}
-								on:change={handleAmpChange}
-							/>
+							<div class=" px-7">
+								<Rangeslider
+									title="Time"
+									min={0}
+									max={audioDurationMap[audioFile.name] ?? 100}
+									start={[
+										timeRangeMap[audioFile.name]?.start ?? 0,
+										timeRangeMap[audioFile.name]?.end ?? 10
+									]}
+									on:change={(e) => handleTimeChange(e, audioFile.name)}
+								/>
+								<Rangeslider
+									title="Amplitude"
+									min={-0.01}
+									max={0.01}
+									start={[
+										ampRangeMap[audioFile.name]?.min ?? -0.01,
+										ampRangeMap[audioFile.name]?.max ?? 0.01
+									]}
+									step={0.001}
+									on:change={(e) => handleAmpChange(e, audioFile.name)}
+								/>
+							</div>
 						{/if}
 					{/key}
 				</div>
@@ -400,11 +446,18 @@
 								>
 							</p>
 							<ul class="mt-1 list-inside list-disc space-y-0.5">
-								<li><span class="font-medium">Start Time:</span> {startTime}s</li>
-								<li><span class="font-medium">End Time:</span> {endTime}s</li>
+								<li>
+									<span class="font-medium">Start Time:</span>
+									{timeRangeMap[audioFile.name]?.start ?? 0}s
+								</li>
+								<li>
+									<span class="font-medium">End Time:</span>
+									{timeRangeMap[audioFile.name]?.end ?? 10}s
+								</li>
 								<li>
 									<span class="font-medium">Frequency Range:</span>
-									{minFreq} Hz → {maxFreq} Hz
+									{freqRangeMap[audioFile.name]?.min ?? minFreq} Hz → {freqRangeMap[audioFile.name]
+										?.max ?? maxFreq} Hz
 								</li>
 								<li>
 									<span class="font-medium">Audio Length:</span>
@@ -415,34 +468,40 @@
 					{/if}
 
 					{#key `spectrogram-${audioFile.inputName}-${spectrogramVersion}`}
-						<Spectrogram
-							{ffmpeg}
-							inputFileName={audioFile.inputName}
-							startTime={timeRangeMap[audioFile.name]?.start ?? 0}
-							endTime={timeRangeMap[audioFile.name]?.end ?? 10}
-							{minFreq}
-							{maxFreq}
-						/>
-
+						<div class="mx-auto flex w-fit flex-col items-center">
+							<Spectrogram
+								{ffmpeg}
+								inputFileName={audioFile.inputName}
+								startTime={timeRangeMap[audioFile.name]?.start ?? 0}
+								endTime={timeRangeMap[audioFile.name]?.end ?? 10}
+								minFreq={freqRangeMap[audioFile.name]?.min ?? 0}
+								maxFreq={freqRangeMap[audioFile.name]?.max ?? 5000}
+							/>
+						</div>
 						{#if showSliders}
-							<Rangeslider
-								title="Time"
-								min={0}
-								max={audioDurationMap[audioFile.name] ?? 100}
-								start={[
-									timeRangeMap[audioFile.name]?.start ?? 0,
-									timeRangeMap[audioFile.name]?.end ?? 10
-								]}
-								on:change={(e) => handleTimeChange(e, audioFile.name)}
-							/>
-							<Rangeslider
-								title="Frequency"
-								min={0}
-								max={44000}
-								start={[minFreq, maxFreq]}
-								step={10}
-								on:change={handleFreqChange}
-							/>
+							<div class=" px-7">
+								<Rangeslider
+									title="Time"
+									min={0}
+									max={audioDurationMap[audioFile.name] ?? 100}
+									start={[
+										timeRangeMap[audioFile.name]?.start ?? 0,
+										timeRangeMap[audioFile.name]?.end ?? 10
+									]}
+									on:change={(e) => handleTimeChange(e, audioFile.name)}
+								/>
+								<Rangeslider
+									title="Frequency"
+									min={0}
+									max={44000}
+									start={[
+										freqRangeMap[audioFile.name]?.min ?? 0,
+										freqRangeMap[audioFile.name]?.max ?? 5000
+									]}
+									step={10}
+									on:change={(e) => handleFreqChange(e, audioFile.name)}
+								/>
+							</div>
 						{/if}
 					{/key}
 				</div>

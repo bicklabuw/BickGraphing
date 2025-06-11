@@ -27,7 +27,7 @@
 			<p class="font-semibold text-gray-800">Bick Graphing</p>
 			<p>&copy; {new Date().getFullYear()} Bick Lab, University of Wisconsin–Madison</p>
 			<p class="mt-1 text-xs text-gray-500">
-				Version 0.0.1 &mdash; Designed by <a
+				Version 1.0.0 &mdash; Designed by <a
 					href="https://gracesteinmetz.com"
 					target="_blank"
 					rel="noopener noreferrer">Grace Steinmetz</a
