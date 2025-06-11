@@ -66,26 +66,37 @@
 		await Promise.all(
 			newFiles.map(async (file) => {
 				if (!ffmpeg) return;
+
 				const inputName = `input_${file.name.replace(/[^a-zA-Z0-9]/g, '_')}`;
 				const data = await fetchFile(file);
 				await ffmpeg.writeFile(inputName, data);
 
 				const arrayBuffer = await file.arrayBuffer();
 				const audioBuffer = await new AudioContext().decodeAudioData(arrayBuffer);
-				audioDurationMap[file.name] = audioBuffer.duration;
-				timeRangeMap[file.name] = {
-					start: 0,
-					end: audioBuffer.duration
-				};
+				const duration = audioBuffer.duration;
 
-				originalAudioFiles.push(file);
-				audioDataArray.push({ name: file.name, inputName });
+				// 🧠 Set defaults for this file
+				timeRangeMap[file.name] = { start: 0, end: duration };
+				ampRangeMap[file.name] = { min: minAmp, max: maxAmp };
+				freqRangeMap[file.name] = { min: minFreq, max: maxFreq };
+				audioDurationMap[file.name] = duration;
+
+				// 📦 Add to file state
+				originalAudioFiles = [...originalAudioFiles, file];
+				audioDataArray = [...audioDataArray, { name: file.name, inputName }];
 				selectedFiles = [...selectedFiles, { id: crypto.randomUUID(), name: file.name }];
 			})
 		);
 
-		isProcessing = false;
 		await tick();
+
+		// ✅ Rerun graph generation for all
+		if (showWaveform || showSpectrogram) {
+			waveformVersion += 1; // triggers re-render
+			await generateVisualizations();
+		}
+
+		isProcessing = false;
 	}
 
 	function handleReorder({ detail }: CustomEvent) {
@@ -208,10 +219,14 @@
 	function handleAllAmpChange(min: number, max: number) {
 		minAmp = min;
 		maxAmp = max;
+
 		for (const { name } of audioDataArray) {
 			ampRangeMap[name] = { min, max };
 		}
-		waveformVersion += 1;
+
+		if (showWaveform) {
+			waveformVersion += 1;
+		}
 	}
 
 	function handleAllFreqChange(min: number, max: number) {
@@ -265,7 +280,7 @@
 		maxLabel="Max Amplitude"
 		minValue={minAmp}
 		maxValue={maxAmp}
-		step={0.01}
+		step={0.00001}
 		onChange={handleAllAmpChange}
 	/>
 
@@ -395,6 +410,7 @@
 										timeRangeMap[audioFile.name]?.start ?? 0,
 										timeRangeMap[audioFile.name]?.end ?? 10
 									]}
+									step={1}
 									on:change={(e) => handleTimeChange(e, audioFile.name)}
 								/>
 								<Rangeslider
@@ -405,7 +421,7 @@
 										ampRangeMap[audioFile.name]?.min ?? -0.01,
 										ampRangeMap[audioFile.name]?.max ?? 0.01
 									]}
-									step={0.001}
+									step={0.00001}
 									on:change={(e) => handleAmpChange(e, audioFile.name)}
 								/>
 							</div>
@@ -489,6 +505,7 @@
 										timeRangeMap[audioFile.name]?.end ?? 10
 									]}
 									on:change={(e) => handleTimeChange(e, audioFile.name)}
+									step={1}
 								/>
 								<Rangeslider
 									title="Frequency"
