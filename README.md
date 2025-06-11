@@ -1,4 +1,5 @@
 # Bick Graphing
+
 Check it out here: [Bick Graphing Link](https://ie-graphing-709865.pages.doit.wisc.edu)
 
 ## Devoloper Installation Guide
@@ -62,5 +63,6 @@ You can preview the production build with `npm run preview`.
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
 
 ## Deployment
+
 - This is deployed through github pages. [Bick Graphing](https://ie-graphing-709865.pages.doit.wisc.edu)
-- 
+-
