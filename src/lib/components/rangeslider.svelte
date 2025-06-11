@@ -7,9 +7,9 @@
 	export let min = -100;
 	export let max = 3000;
 	export let start = [10, 1000]; // default start range
-	export let step = 1;
+	export let step = 0.0001;
 	export let format = {
-		to: (value: number) => value.toFixed(3),
+		to: (value: number) => value.toFixed(5),
 		from: (value: string) => parseFloat(value)
 	};
 
