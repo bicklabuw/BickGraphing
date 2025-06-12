@@ -33,12 +33,12 @@
 	// $: if (waveformData.length > 0) draw();
 
 	function draw() {
-		console.log("Container:", container);
+		console.log('Container:', container);
 		container.classList.remove('absolute', 'bottom-2');
 		d3.select(container).html('');
 		const margin = { top: 4, right: 4, bottom: 16, left: 14 };
 		const maxRect = container.getBoundingClientRect();
-		console.log("Max Rect:", maxRect);
+		console.log('Max Rect:', maxRect);
 		const aspectRatio = 21 / 9; // 21:9 aspect ratio
 		const height = maxRect.width / aspectRatio;
 		const width = maxRect.width;
@@ -56,7 +56,8 @@
 			.attr('viewBox', `0 0 ${width} ${height}`)
 			.attr('preserveAspectRatio', 'xMidYMid meet');
 
-		svg.append('defs')
+		svg
+			.append('defs')
 			.append('clipPath')
 			.attr('id', 'clipMiniWaveform')
 			.append('rect')
@@ -64,10 +65,8 @@
 			.attr('y', 0)
 			.attr('width', innerWidth)
 			.attr('height', innerHeight);
-		
-		const g = svg
-			.append('g')
-			.attr('transform', `translate(${margin.left},${margin.top})`)
+
+		const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
 		const x = d3.scaleLinear().domain([startTime, endTime]).range([0, innerWidth]);
 		const y = d3.scaleLinear().domain([minAmp, maxAmp]).range([innerHeight, 0]);
@@ -78,9 +77,8 @@
 			.y((d) => y(d.amplitude));
 
 		// Draw waveform
-		const waveformGroup = g.append('g')
-			.attr('clip-path', 'url(#clipMiniWaveform)');
-		
+		const waveformGroup = g.append('g').attr('clip-path', 'url(#clipMiniWaveform)');
+
 		waveformGroup
 			.append('path')
 			.datum(waveformData)
@@ -92,36 +90,37 @@
 		// X-axis: show first and last ticks
 		const xAxis = d3.axisBottom(x).tickValues([startTime, endTime]).tickFormat(d3.format('.0f'));
 
-		g
-			.append('g')
+		g.append('g')
 			.attr('transform', `translate(0, ${innerHeight})`)
 			.call(xAxis)
 			.selectAll('.domain, .tick line')
 			.attr('stroke', '#ccc');
 
-		g
-			.selectAll('.tick text')
-				.attr('text-anchor', (d: number) => {
-					console.log("Tick value:", d);
-					console.log("Start time:", startTime, "End time:", endTime);
-					if (d === endTime) return 'end';
-					return 'middle';
-				})
-				.attr('dx', (d: number) => {
-					if (d === endTime) return '0.25em';
-					return '0';
-				});
+		g.selectAll('.tick text')
+			.attr('text-anchor', (d: number) => {
+				// console.log('Tick value:', d);
+				// console.log('Start time:', startTime, 'End time:', endTime);
+				if (d === endTime) return 'end';
+				return 'middle';
+			})
+			.attr('dx', (d: number) => {
+				if (d === endTime) return '0.25em';
+				return '0';
+			});
 
-		const yAxis = g.append('g').call(d3.axisLeft(y).tickValues([minAmp, maxAmp]).tickFormat(d3.format(".1e")));
+		const yAxis = g
+			.append('g')
+			.call(d3.axisLeft(y).tickValues([minAmp, maxAmp]).tickFormat(d3.format('.1e')));
 
-		yAxis.selectAll('text')
+		yAxis
+			.selectAll('text')
 			.attr('transform', 'rotate(-90)')
 			.attr('dy', '-0.7em')
 			.attr('dx', (d: number) => {
-					if (d === maxAmp) return '1.2em';
-					else if (d === minAmp) return '3.25em';
-					return '0';
-				});
+				if (d === maxAmp) return '1.2em';
+				else if (d === minAmp) return '3.25em';
+				return '0';
+			});
 		yAxis.selectAll('.domain, .tick line').attr('stroke', '#ccc');
 
 		container.classList.add('absolute', 'bottom-2');
@@ -137,4 +136,3 @@
 		<div bind:this={container} class="miniwaveform"></div>
 	</div>
 </div>
-
