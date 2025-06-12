@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy, tick } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import * as d3 from 'd3';
 
 	export let waveformData: { time: number; amplitude: number }[] = [];
@@ -28,10 +28,10 @@
 		// scrollY = window.scrollY;
 		// console.log('Scroll position updated:', window.scrollY);
 		console.trace(); // show call stack that triggered it
-		// console.log('Scroll Event:', event);
+		console.log('Scroll Event:', event);
 	}
 
-	onMount(async () => {
+	onMount(() => {
 		window.addEventListener('scroll', handleScroll, { passive: true });
 		if (waveformData.length > 0) {
 			// console.log(`Scroll position before processing: ${scrollY}`);
