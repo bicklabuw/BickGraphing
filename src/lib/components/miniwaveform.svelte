@@ -97,13 +97,15 @@
 			.attr('stroke', '#ccc');
 
 		g.selectAll('.tick text')
-			.attr('text-anchor', (d: number) => {
+			.attr('text-anchor', (d: unknown) => {
 				// console.log('Tick value:', d);
 				// console.log('Start time:', startTime, 'End time:', endTime);
+				d = d as number;
 				if (d === endTime) return 'end';
 				return 'middle';
 			})
-			.attr('dx', (d: number) => {
+			.attr('dx', (d: unknown) => {
+				d = d as number;
 				if (d === endTime) return '0.25em';
 				return '0';
 			});
@@ -116,7 +118,8 @@
 			.selectAll('text')
 			.attr('transform', 'rotate(-90)')
 			.attr('dy', '-0.7em')
-			.attr('dx', (d: number) => {
+			.attr('dx', (d: unknown) => {
+				d = d as number;
 				if (d === maxAmp) return '1.2em';
 				else if (d === minAmp) return '3.25em';
 				return '0';
