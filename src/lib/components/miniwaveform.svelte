@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import * as d3 from 'd3';
 
 	export let waveformData: { time: number; amplitude: number }[] = [];
@@ -8,32 +8,69 @@
 	export let minAmp = -1;
 	export let maxAmp = 1;
 
-	let container: HTMLDivElement;
+	export let audioFileName: string = 'UNKNOWN';
 
-	onMount(() => {
+	let container: HTMLDivElement;
+	let relative_parent: HTMLDivElement;
+	let observer: ResizeObserver | undefined;
+
+	onMount(async () => {
 		if (waveformData.length > 0) {
 			draw();
 		}
+
+		// Watch for resize
+		observer = new ResizeObserver(async () => {
+			draw();
+		});
+		if (container) observer.observe(container);
 	});
 
-	$: if (waveformData.length > 0) draw();
+	onDestroy(() => {
+		if (observer && container) observer.unobserve(container);
+	});
+
+	// $: if (waveformData.length > 0) draw();
 
 	function draw() {
+		console.log("Container:", container);
+		container.classList.remove('absolute', 'bottom-2');
 		d3.select(container).html('');
-		const margin = { top: 4, right: 4, bottom: 16, left: 4 };
-		const width = 200;
-		const height = 50;
+		const margin = { top: 4, right: 4, bottom: 16, left: 14 };
+		const maxRect = container.getBoundingClientRect();
+		console.log("Max Rect:", maxRect);
+		const aspectRatio = 21 / 9; // 21:9 aspect ratio
+		const height = maxRect.width / aspectRatio;
+		const width = maxRect.width;
+
+		console.log(`Creating mini waveform with dimensions: ${width}x${height}`);
+
+		const innerWidth = width - margin.left - margin.right;
+		const innerHeight = height - margin.top - margin.bottom;
 
 		const svg = d3
 			.select(container)
 			.append('svg')
-			.attr('width', width + margin.left + margin.right)
-			.attr('height', height + margin.top + margin.bottom)
-			.append('g')
-			.attr('transform', `translate(${margin.left},${margin.top})`);
+			.attr('width', '100%')
+			.attr('height', height)
+			.attr('viewBox', `0 0 ${width} ${height}`)
+			.attr('preserveAspectRatio', 'xMidYMid meet');
 
-		const x = d3.scaleLinear().domain([startTime, endTime]).range([0, width]);
-		const y = d3.scaleLinear().domain([minAmp, maxAmp]).range([height, 0]);
+		svg.append('defs')
+			.append('clipPath')
+			.attr('id', 'clipMiniWaveform')
+			.append('rect')
+			.attr('x', 0)
+			.attr('y', 0)
+			.attr('width', innerWidth)
+			.attr('height', innerHeight);
+		
+		const g = svg
+			.append('g')
+			.attr('transform', `translate(${margin.left},${margin.top})`)
+
+		const x = d3.scaleLinear().domain([startTime, endTime]).range([0, innerWidth]);
+		const y = d3.scaleLinear().domain([minAmp, maxAmp]).range([innerHeight, 0]);
 
 		const line = d3
 			.line<{ time: number; amplitude: number }>()
@@ -41,7 +78,10 @@
 			.y((d) => y(d.amplitude));
 
 		// Draw waveform
-		svg
+		const waveformGroup = g.append('g')
+			.attr('clip-path', 'url(#clipMiniWaveform)');
+		
+		waveformGroup
 			.append('path')
 			.datum(waveformData)
 			.attr('fill', 'none')
@@ -50,15 +90,51 @@
 			.attr('d', line);
 
 		// X-axis: show first and last ticks
-		const xAxis = d3.axisBottom(x).tickValues([startTime, endTime]).tickFormat(d3.format('.2f'));
+		const xAxis = d3.axisBottom(x).tickValues([startTime, endTime]).tickFormat(d3.format('.0f'));
 
-		svg
+		g
 			.append('g')
-			.attr('transform', `translate(0, ${height})`)
+			.attr('transform', `translate(0, ${innerHeight})`)
 			.call(xAxis)
 			.selectAll('.domain, .tick line')
 			.attr('stroke', '#ccc');
+
+		g
+			.selectAll('.tick text')
+				.attr('text-anchor', (d: number) => {
+					console.log("Tick value:", d);
+					console.log("Start time:", startTime, "End time:", endTime);
+					if (d === endTime) return 'end';
+					return 'middle';
+				})
+				.attr('dx', (d: number) => {
+					if (d === endTime) return '0.25em';
+					return '0';
+				});
+
+		const yAxis = g.append('g').call(d3.axisLeft(y).tickValues([minAmp, maxAmp]).tickFormat(d3.format(".1e")));
+
+		yAxis.selectAll('text')
+			.attr('transform', 'rotate(-90)')
+			.attr('dy', '-0.7em')
+			.attr('dx', (d: number) => {
+					if (d === maxAmp) return '1.2em';
+					else if (d === minAmp) return '3.25em';
+					return '0';
+				});
+		yAxis.selectAll('.domain, .tick line').attr('stroke', '#ccc');
+
+		container.classList.add('absolute', 'bottom-2');
+		relative_parent.style.setProperty('padding-bottom', `calc(0.5rem + ${height}px)`);
 	}
 </script>
 
-<div bind:this={container} class="miniwaveform"></div>
+<div bind:this={relative_parent} class="relative rounded border bg-white p-2 shadow-sm">
+	<p class="mb-2 whitespace-normal break-words text-xs font-semibold">
+		{audioFileName}
+	</p>
+	<div class="items-center justify-center">
+		<div bind:this={container} class="miniwaveform"></div>
+	</div>
+</div>
+
