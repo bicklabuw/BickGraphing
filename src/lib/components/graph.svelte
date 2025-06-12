@@ -23,7 +23,14 @@
 
 	let originalAudioFiles: File[] = [];
 	let audioDataArray: { name: string; inputName: string }[] = [];
-	let waveformDataMap: Record<string, { time: number; amplitude: number }[]> = {};
+	let waveformDataMap: Record<
+		string,
+		{
+			waveform: { time: number; amplitude: number }[];
+			minAmp: number;
+			maxAmp: number;
+		}
+	> = {};
 	let audioDurationMap: Record<string, number> = {};
 	let timeRangeMap: Record<string, { start: number; end: number }> = {};
 	let ampRangeMap: Record<string, { min: number; max: number }> = {};
@@ -43,6 +50,8 @@
 	let showDetails = false;
 	let showSliders = false;
 
+	let scrollY = 0; // Track scroll position for re-rendering
+
 	onMount(async () => {
 		try {
 			ffmpeg = await initFFmpeg();
@@ -58,6 +67,16 @@
 		const newFiles = Array.from(files).filter(
 			(file) => !selectedFiles.some((f) => f.name === file.name)
 		);
+		if (debug) console.log('Processing files:', newFiles);
+
+		if (debug) {
+			for (let file of files) {
+				console.log(file);
+				console.log(`Processing file: ${file.name}`);
+				console.log(`File size: ${file.size} bytes`);
+				console.log(`File type: ${file.type}`);
+			}
+		}
 
 		if (!newFiles.length) return;
 
@@ -77,7 +96,7 @@
 
 				// 🧠 Set defaults for this file
 				timeRangeMap[file.name] = { start: 0, end: duration };
-				ampRangeMap[file.name] = { min: minAmp, max: maxAmp };
+				// ampRangeMap[file.name] = { min: minAmp, max: maxAmp };
 				freqRangeMap[file.name] = { min: minFreq, max: maxFreq };
 				audioDurationMap[file.name] = duration;
 
@@ -92,7 +111,7 @@
 
 		// ✅ Rerun graph generation for all
 		if (showWaveform || showSpectrogram) {
-			waveformVersion += 1; // triggers re-render
+			update_graph_versions(true, false); // triggers re-render
 			await generateVisualizations();
 		}
 
@@ -124,18 +143,43 @@
 		const startSample = Math.floor(start * sampleRate);
 		const endSample = Math.min(Math.floor(end * sampleRate), audioBuffer.length);
 		const channelData = audioBuffer.getChannelData(0);
-		const maxPoints = 2000;
+		const maxPoints = 5000;
 		const totalSamples = endSample - startSample;
 		const step = totalSamples > maxPoints ? Math.floor(totalSamples / maxPoints) : 1;
 		const waveform = [];
+
+		let minAmplitude = Infinity;
+		let maxAmplitude = -Infinity;
 
 		for (let i = startSample; i < endSample; i += step) {
 			waveform.push({
 				time: i / sampleRate,
 				amplitude: channelData[i]
 			});
+
+			minAmplitude = Math.min(minAmplitude, channelData[i]);
+			maxAmplitude = Math.max(maxAmplitude, channelData[i]);
 		}
-		return waveform;
+
+		if (debug) {
+			console.log(`Extracted waveform data from ${start}s to ${end}s: ${waveform.length} points`);
+			console.log(`Amplitude range: ${minAmplitude} to ${maxAmplitude}`);
+		}
+
+		return {
+			waveform: waveform,
+			minAmp: minAmplitude,
+			maxAmp: maxAmplitude
+		};
+	}
+
+	function update_graph_versions(waveform: boolean, spectrogram: boolean) {
+		if (waveform) waveformVersion += 1;
+		if (spectrogram) spectrogramVersion += 1;
+
+		scrollY = window.scrollY; // Capture scroll position before re-render
+
+		if (debug) console.log('New Scroll Position:', scrollY);
 	}
 
 	async function generateVisualizations() {
@@ -156,6 +200,12 @@
 
 		const audioContext = new AudioContext();
 
+		if (debug) {
+			console.log(
+				`Generating visualizations for ${originalAudioFiles.length} audio files from ${startTime}s to ${endTime}s`
+			);
+		}
+
 		for (let i = 0; i < originalAudioFiles.length; i++) {
 			const file = originalAudioFiles[i];
 			const arrayBuffer = await file.arrayBuffer();
@@ -174,6 +224,17 @@
 
 			if (showWaveform) {
 				waveformDataMap[file.name] = extractWaveformData(audioBuffer, start, end);
+				ampRangeMap[file.name] = {
+					min: waveformDataMap[file.name].minAmp,
+					max: waveformDataMap[file.name].maxAmp
+				};
+
+				if (debug) {
+					console.log(`Extracted waveform data for ${file.name} from ${start}s to ${end}s`);
+					console.log(
+						`Waveform points: ${waveformDataMap[file.name].waveform.length}, Min Amp: ${waveformDataMap[file.name].minAmp}, Max Amp: ${waveformDataMap[file.name].maxAmp}`
+					);
+				}
 			}
 
 			if (!showWaveform) {
@@ -183,27 +244,26 @@
 		}
 
 		isProcessing = false;
-		waveformVersion += 1;
+		update_graph_versions(true, false);
 		await tick();
 	}
 
 	function handleTimeChange(event: CustomEvent<{ values: number[] }>, fileName: string) {
 		const [start, end] = event.detail.values;
 		timeRangeMap[fileName] = { start, end };
-		if (showWaveform) waveformVersion += 1;
-		if (showSpectrogram) spectrogramVersion += 1;
+		update_graph_versions(showWaveform, showSpectrogram);
 	}
 
 	function handleAmpChange(event: CustomEvent<{ values: number[] }>, fileName: string) {
 		const [min, max] = event.detail.values;
 		ampRangeMap[fileName] = { min, max };
-		waveformVersion += 1;
+		update_graph_versions(true, false);
 	}
 
 	function handleFreqChange(event: CustomEvent<{ values: number[] }>, fileName: string) {
 		const [min, max] = event.detail.values;
 		freqRangeMap[fileName] = { min, max };
-		spectrogramVersion += 1;
+		update_graph_versions(false, true);
 	}
 
 	function handleAllTimeChange(start: number, end: number) {
@@ -212,8 +272,7 @@
 		for (const { name } of audioDataArray) {
 			timeRangeMap[name] = { start, end };
 		}
-		if (showWaveform) waveformVersion += 1;
-		if (showSpectrogram) spectrogramVersion += 1;
+		update_graph_versions(showWaveform, showSpectrogram);
 	}
 
 	function handleAllAmpChange(min: number, max: number) {
@@ -225,7 +284,7 @@
 		}
 
 		if (showWaveform) {
-			waveformVersion += 1;
+			update_graph_versions(true, false);
 		}
 	}
 
@@ -235,7 +294,7 @@
 		for (const { name } of audioDataArray) {
 			freqRangeMap[name] = { min, max };
 		}
-		spectrogramVersion += 1;
+		update_graph_versions(false, true);
 	}
 
 	function handleVisChange(wave: boolean, spec: boolean) {
@@ -317,22 +376,20 @@
 	{#if showWaveform}
 		<div class="mt-6 grid grid-cols-4 gap-4">
 			{#each audioDataArray as audioFile (audioFile.name)}
-				<div class="rounded border bg-white p-2 shadow-sm">
-					<p class="mb-2 whitespace-normal break-words text-xs font-semibold">
-						{audioFile.name}
-					</p>
-					<div class="flex h-24 items-center justify-center">
-						{#key `mini-${audioFile.name}-${waveformVersion}`}
-							<Miniwaveform
-								waveformData={waveformDataMap[audioFile.name] ?? []}
-								startTime={timeRangeMap[audioFile.name]?.start ?? 0}
-								endTime={timeRangeMap[audioFile.name]?.end ?? 10}
-								minAmp={ampRangeMap[audioFile.name]?.min ?? minAmp}
-								maxAmp={ampRangeMap[audioFile.name]?.max ?? maxAmp}
-							/>
-						{/key}
-					</div>
-				</div>
+				{#key `mini-${audioFile.name}-${waveformVersion}`}
+					<Miniwaveform
+						waveformData={waveformDataMap[audioFile.name]?.waveform ?? []}
+						startTime={timeRangeMap[audioFile.name]?.start ?? 0}
+						endTime={timeRangeMap[audioFile.name]?.end ?? 10}
+						minAmp={ampRangeMap[audioFile.name]?.min ??
+							waveformDataMap[audioFile.name]?.minAmp ??
+							minAmp}
+						maxAmp={ampRangeMap[audioFile.name]?.max ??
+							waveformDataMap[audioFile.name]?.maxAmp ??
+							maxAmp}
+						audioFileName={audioFile.name}
+					/>
+				{/key}
 			{/each}
 		</div>
 	{/if}
@@ -391,13 +448,18 @@
 					{/if}
 
 					{#key `waveform-${audioFile.inputName}-${waveformVersion}`}
-						<div class="mx-auto flex w-fit flex-col items-center">
+						<div class="mx-auto items-center">
 							<Waveform
-								waveformData={waveformDataMap[audioFile.name] ?? []}
+								waveformData={waveformDataMap[audioFile.name]?.waveform ?? []}
 								startTime={timeRangeMap[audioFile.name]?.start ?? 0}
 								endTime={timeRangeMap[audioFile.name]?.end ?? 10}
-								minAmp={ampRangeMap[audioFile.name]?.min ?? -0.01}
-								maxAmp={ampRangeMap[audioFile.name]?.max ?? 0.01}
+								minAmp={ampRangeMap[audioFile.name]?.min ??
+									waveformDataMap[audioFile.name]?.minAmp ??
+									minAmp}
+								maxAmp={ampRangeMap[audioFile.name]?.max ??
+									waveformDataMap[audioFile.name]?.maxAmp ??
+									maxAmp}
+								{scrollY}
 							/>
 						</div>
 						{#if showSliders}
