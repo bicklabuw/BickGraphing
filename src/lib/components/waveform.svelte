@@ -15,7 +15,7 @@
 
 	let initialScroll = false; // Flag to handle initial scroll position
 
-	function handleScroll(event: Event) {
+	function handleScroll(/*event: Event*/) {
 		if (window.scrollY === scrollY) {
 			initialScroll = false; // No need to update on initial scroll
 			window.removeEventListener('scroll', handleScroll);
@@ -27,8 +27,8 @@
 		}
 		// scrollY = window.scrollY;
 		// console.log('Scroll position updated:', window.scrollY);
-		console.trace(); // show call stack that triggered it
-		console.log('Scroll Event:', event);
+		// console.trace(); // show call stack that triggered it
+		// console.log('Scroll Event:', event);
 	}
 
 	onMount(() => {

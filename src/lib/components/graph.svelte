@@ -200,9 +200,11 @@
 
 		const audioContext = new AudioContext();
 
-		console.log(
-			`Generating visualizations for ${originalAudioFiles.length} audio files from ${startTime}s to ${endTime}s`
-		);
+		if (debug) {
+			console.log(
+				`Generating visualizations for ${originalAudioFiles.length} audio files from ${startTime}s to ${endTime}s`
+			);
+		}
 
 		for (let i = 0; i < originalAudioFiles.length; i++) {
 			const file = originalAudioFiles[i];
