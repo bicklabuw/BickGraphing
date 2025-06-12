@@ -6,7 +6,6 @@
 	export let minValue: number;
 	export let maxValue: number;
 	export let step: number = 0.00001;
-	export let minLimit: number = 0;
 	export let onChange: (min: number, max: number) => void;
 
 	let localMin: string = minValue.toString(); // Local string for editing
