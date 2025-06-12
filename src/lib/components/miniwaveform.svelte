@@ -14,20 +14,20 @@
 	let relative_parent: HTMLDivElement;
 	let observer: ResizeObserver | undefined;
 
-	onMount(async () => {
+	onMount(() => {
 		if (waveformData.length > 0) {
 			draw();
 		}
 
 		// Watch for resize
-		observer = new ResizeObserver(async () => {
+		observer = new ResizeObserver(() => {
 			draw();
 		});
-		if (container) observer.observe(container);
+		if (relative_parent) observer.observe(relative_parent);
 	});
 
 	onDestroy(() => {
-		if (observer && container) observer.unobserve(container);
+		if (observer && relative_parent) observer.unobserve(relative_parent);
 	});
 
 	// $: if (waveformData.length > 0) draw();
@@ -132,7 +132,7 @@
 </script>
 
 <div bind:this={relative_parent} class="relative rounded border bg-white p-2 shadow-sm">
-	<p class="mb-2 whitespace-normal break-words text-xs font-semibold">
+	<p class="mb-2 whitespace-normal break-words text-center text-xs font-semibold">
 		{audioFileName}
 	</p>
 	<div class="items-center justify-center">
