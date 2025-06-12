@@ -21,30 +21,30 @@
 			window.removeEventListener('scroll', handleScroll);
 		} else if (initialScroll) {
 			requestAnimationFrame(() => {
-				console.log("Scroll position attempt after processing:", scrollY);
+				// console.log('Scroll position attempt after processing:', scrollY);
 				window.scrollTo({ top: scrollY, behavior: 'instant' });
 			});
 		}
 		// scrollY = window.scrollY;
-		console.log("Scroll position updated:", window.scrollY);
+		// console.log('Scroll position updated:', window.scrollY);
 		console.trace(); // show call stack that triggered it
-		console.log("Scroll Event:", event);
+		// console.log('Scroll Event:', event);
 	}
 
-	onMount(async() => {
+	onMount(async () => {
 		window.addEventListener('scroll', handleScroll, { passive: true });
 		if (waveformData.length > 0) {
-			console.log(`Scroll position before processing: ${scrollY}`);
-			console.log("Current Scroll Position:", window.scrollY);
+			// console.log(`Scroll position before processing: ${scrollY}`);
+			// console.log('Current Scroll Position:', window.scrollY);
 
 			createWaveform();
 
 			initialScroll = true; // Reset flag after initial render
-			
+
 			// await tick(); // Ensure DOM updates are applied before scrolling
 			// await tick();
-			
-			console.log("Scroll position after processing:", scrollY);
+
+			// console.log('Scroll position after processing:', scrollY);
 		}
 
 		// Watch for resize
@@ -52,7 +52,9 @@
 			createWaveform();
 		});
 		if (container) observer.observe(container);
-		return () => {if (initialScroll) window.removeEventListener('scroll', handleScroll);}
+		return () => {
+			if (initialScroll) window.removeEventListener('scroll', handleScroll);
+		};
 	});
 
 	onDestroy(() => {
@@ -62,17 +64,17 @@
 	function createWaveform() {
 		d3.select(container).html('');
 
-		console.log("minAmp:", minAmp);
-		console.log("maxAmp:", maxAmp);
-		console.log("Start Time:", startTime);
-		console.log("End Time:", endTime);
-		console.log("Waveform Data Length:", waveformData.length);
+		console.log('minAmp:', minAmp);
+		console.log('maxAmp:', maxAmp);
+		console.log('Start Time:', startTime);
+		console.log('End Time:', endTime);
+		console.log('Waveform Data Length:', waveformData.length);
 
-		console.log("Container:", container);
+		console.log('Container:', container);
 
 		const margin = { top: 30, right: 40, bottom: 30, left: 80 };
 		const maxRect = container.getBoundingClientRect();
-		console.log("Max Rect:", maxRect);
+		console.log('Max Rect:', maxRect);
 		const aspectRatio = 21 / 9; // 16:9 aspect ratio
 		const height = maxRect.width / aspectRatio;
 		const width = maxRect.width;
@@ -90,7 +92,8 @@
 			.attr('viewBox', `0 0 ${width} ${height}`)
 			.attr('preserveAspectRatio', 'xMidYMid meet');
 
-		svg.append('defs')
+		svg
+			.append('defs')
 			.append('clipPath')
 			.attr('id', 'clipWaveform')
 			.append('rect')
@@ -99,9 +102,7 @@
 			.attr('width', innerWidth)
 			.attr('height', innerHeight);
 
-		const g = svg
-			.append('g')
-			.attr('transform', `translate(${margin.left},${margin.top})`)
+		const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
 		const x = d3.scaleLinear().domain([startTime, endTime]).range([0, innerWidth]);
 		const y = d3.scaleLinear().domain([minAmp, maxAmp]).range([innerHeight, 0]);
@@ -122,7 +123,12 @@
 
 		g.append('g')
 			.attr('transform', `translate(0,${innerHeight})`)
-			.call(d3.axisBottom(x).ticks(10).tickFormat((d) => Number(d).toFixed(1)));
+			.call(
+				d3
+					.axisBottom(x)
+					.ticks(10)
+					.tickFormat((d) => Number(d).toFixed(1))
+			);
 
 		g.append('g').call(d3.axisLeft(y).ticks(5));
 
@@ -134,10 +140,10 @@
 			.attr('font-weight', 'bold')
 			.text(`Waveform (${startTime.toFixed(1)}s - ${endTime.toFixed(1)}s)`);
 
-		const waveformGroup = g.append('g')
-			.attr('clip-path', 'url(#clipWaveform)');
+		const waveformGroup = g.append('g').attr('clip-path', 'url(#clipWaveform)');
 
-		waveformGroup.append('path')
+		waveformGroup
+			.append('path')
 			.datum(waveformData)
 			.attr('fill', 'none')
 			.attr('stroke', '#4CAF50')

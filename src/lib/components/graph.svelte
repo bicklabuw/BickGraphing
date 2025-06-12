@@ -23,11 +23,14 @@
 
 	let originalAudioFiles: File[] = [];
 	let audioDataArray: { name: string; inputName: string }[] = [];
-	let waveformDataMap: Record<string, { 
-		waveform: { time: number; amplitude: number }[]; 
-		minAmp: number; 
-		maxAmp: number; 
-	}> = {};
+	let waveformDataMap: Record<
+		string,
+		{
+			waveform: { time: number; amplitude: number }[];
+			minAmp: number;
+			maxAmp: number;
+		}
+	> = {};
 	let audioDurationMap: Record<string, number> = {};
 	let timeRangeMap: Record<string, { start: number; end: number }> = {};
 	let ampRangeMap: Record<string, { min: number; max: number }> = {};
@@ -65,11 +68,14 @@
 			(file) => !selectedFiles.some((f) => f.name === file.name)
 		);
 		if (debug) console.log('Processing files:', newFiles);
-		for (let file of files) {
-			console.log(file);
-			console.log(`Processing file: ${file.name}`);
-			console.log(`File size: ${file.size} bytes`);
-			console.log(`File type: ${file.type}`);
+
+		if (debug) {
+			for (let file of files) {
+				console.log(file);
+				console.log(`Processing file: ${file.name}`);
+				console.log(`File size: ${file.size} bytes`);
+				console.log(`File type: ${file.type}`);
+			}
 		}
 
 		if (!newFiles.length) return;
@@ -105,7 +111,7 @@
 
 		// ✅ Rerun graph generation for all
 		if (showWaveform || showSpectrogram) {
-			update_graph_versions(true, false) // triggers re-render
+			update_graph_versions(true, false); // triggers re-render
 			await generateVisualizations();
 		}
 
@@ -155,12 +161,11 @@
 			maxAmplitude = Math.max(maxAmplitude, channelData[i]);
 		}
 
-		console.log(
-			`Extracted waveform data from ${start}s to ${end}s: ${waveform.length} points`
-		);
-		console.log(
-			`Amplitude range: ${minAmplitude} to ${maxAmplitude}`
-		);
+		if (debug) {
+			console.log(`Extracted waveform data from ${start}s to ${end}s: ${waveform.length} points`);
+			console.log(`Amplitude range: ${minAmplitude} to ${maxAmplitude}`);
+		}
+
 		return {
 			waveform: waveform,
 			minAmp: minAmplitude,
@@ -173,7 +178,8 @@
 		if (spectrogram) spectrogramVersion += 1;
 
 		scrollY = window.scrollY; // Capture scroll position before re-render
-		console.log("New Scroll Position:", scrollY);
+
+		if (debug) console.log('New Scroll Position:', scrollY);
 	}
 
 	async function generateVisualizations() {
@@ -220,12 +226,13 @@
 					min: waveformDataMap[file.name].minAmp,
 					max: waveformDataMap[file.name].maxAmp
 				};
-				console.log(
-					`Extracted waveform data for ${file.name} from ${start}s to ${end}s`
-				);
-				console.log(
-					`Waveform points: ${waveformDataMap[file.name].waveform.length}, Min Amp: ${waveformDataMap[file.name].minAmp}, Max Amp: ${waveformDataMap[file.name].maxAmp}`
-				);
+
+				if (debug) {
+					console.log(`Extracted waveform data for ${file.name} from ${start}s to ${end}s`);
+					console.log(
+						`Waveform points: ${waveformDataMap[file.name].waveform.length}, Min Amp: ${waveformDataMap[file.name].minAmp}, Max Amp: ${waveformDataMap[file.name].maxAmp}`
+					);
+				}
 			}
 
 			if (!showWaveform) {
@@ -372,8 +379,12 @@
 						waveformData={waveformDataMap[audioFile.name]?.waveform ?? []}
 						startTime={timeRangeMap[audioFile.name]?.start ?? 0}
 						endTime={timeRangeMap[audioFile.name]?.end ?? 10}
-						minAmp={ampRangeMap[audioFile.name]?.min ?? (waveformDataMap[audioFile.name]?.minAmp ?? minAmp)}
-						maxAmp={ampRangeMap[audioFile.name]?.max ?? (waveformDataMap[audioFile.name]?.maxAmp ?? maxAmp)}
+						minAmp={ampRangeMap[audioFile.name]?.min ??
+							waveformDataMap[audioFile.name]?.minAmp ??
+							minAmp}
+						maxAmp={ampRangeMap[audioFile.name]?.max ??
+							waveformDataMap[audioFile.name]?.maxAmp ??
+							maxAmp}
 						audioFileName={audioFile.name}
 					/>
 				{/key}
@@ -440,11 +451,13 @@
 								waveformData={waveformDataMap[audioFile.name]?.waveform ?? []}
 								startTime={timeRangeMap[audioFile.name]?.start ?? 0}
 								endTime={timeRangeMap[audioFile.name]?.end ?? 10}
-								minAmp={ampRangeMap[audioFile.name]?.min ?? 
-									(waveformDataMap[audioFile.name]?.minAmp ?? minAmp)}
-								maxAmp={ampRangeMap[audioFile.name]?.max ?? 
-									(waveformDataMap[audioFile.name]?.maxAmp ?? maxAmp)}
-								scrollY={scrollY}
+								minAmp={ampRangeMap[audioFile.name]?.min ??
+									waveformDataMap[audioFile.name]?.minAmp ??
+									minAmp}
+								maxAmp={ampRangeMap[audioFile.name]?.max ??
+									waveformDataMap[audioFile.name]?.maxAmp ??
+									maxAmp}
+								{scrollY}
 							/>
 						</div>
 						{#if showSliders}
