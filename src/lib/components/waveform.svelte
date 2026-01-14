@@ -10,10 +10,46 @@
 
 	export let scrollY: number = 0; // Initial scroll position
 
+	export let audioFileName: string = "waveform";
+
+	export let computedHeight: number = 400;
 	let container: HTMLDivElement;
 	let observer: ResizeObserver | undefined;
 
 	let initialScroll = false; // Flag to handle initial scroll position
+
+	export function downloadWaveform() {
+		if (!container) return;
+
+		const svgEl = container.querySelector('svg');
+		if (!svgEl) return;
+
+		// Clone SVG to avoid modifying the live DOM
+		const clone = svgEl.cloneNode(true) as SVGSVGElement;
+
+		// Add white background
+		const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+		rect.setAttribute('width', '100%');
+		rect.setAttribute('height', '100%');
+		rect.setAttribute('fill', 'white');
+		clone.insertBefore(rect, clone.firstChild);
+
+		// Serialize SVG
+		const serializer = new XMLSerializer();
+		const source = serializer.serializeToString(clone);
+		const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+
+		// Generate filename
+		const filename = `${audioFileName}_${Math.floor(startTime)}s-${Math.floor(endTime)}s.svg`;
+
+		// Trigger download
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = filename;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
 
 	function handleScroll(/*event: Event*/) {
 		if (window.scrollY === scrollY) {
@@ -57,6 +93,15 @@
 		};
 	});
 
+	// re-rendering
+	// $: if (container && waveformData.length > 0) {
+	// 	startTime;
+	// 	endTime;
+	// 	minAmp;
+	// 	maxAmp;
+	// 	createWaveform();
+	// }
+
 	onDestroy(() => {
 		if (observer && container) observer.unobserve(container);
 	});
@@ -78,6 +123,8 @@
 		const aspectRatio = 21 / 9; // 16:9 aspect ratio
 		const height = maxRect.width / aspectRatio;
 		const width = maxRect.width;
+		computedHeight = Math.round(height);
+		console.log('Waveform height computed:', computedHeight);
 
 		console.log(`Creating waveform with dimensions: ${width}x${height}`);
 

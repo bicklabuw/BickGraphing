@@ -9,6 +9,7 @@
 	export let onChange: (min: number, max: number) => void;
 
 	let localMin: string = minValue.toString(); // Local string for editing
+	$: localMin = minValue.toString(); //in sync when parent updates
 
 	function commitMin() {
 		const normalized = localMin.replace(',', '.');
@@ -20,9 +21,15 @@
 		}
 	}
 
+	// function updateMax(val: string) {
+	// 	onChange(minValue, parseFloat(val));
+	// }
 	function updateMax(val: string) {
-		onChange(minValue, parseFloat(val));
+	const parsed = parseFloat(val);
+	if (!isNaN(parsed)) {
+		onChange(minValue, parsed);
 	}
+}
 </script>
 
 <div class="mt-4 space-y-2">
@@ -45,6 +52,7 @@
 				bind:value={localMin}
 				on:blur={commitMin}
 				on:keydown={(e) => e.key === 'Enter' && commitMin()}
+				placeholder={`Enter ${minLabel.toLowerCase()}`}
 				class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-800 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-400"
 			/>
 		</div>
@@ -61,6 +69,8 @@
 				value={maxValue}
 				{step}
 				on:input={(e) => updateMax((e.target as HTMLInputElement).value)}
+				on:keydown={(e) => e.key === 'Enter' && updateMax((e.target as HTMLInputElement).value)}
+				placeholder={`Enter ${maxLabel.toLowerCase()}`}
 				class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-800 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-400"
 			/>
 		</div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let spectrogramOnline: boolean = false;
+	export let spectrogramOnline: boolean = true;
 	export let showWaveform: boolean;
 	export let showSpectrogram: boolean;
 	export let onChange: (waveform: boolean, spectrogram: boolean) => void;
