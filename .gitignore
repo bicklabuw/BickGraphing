@@ -1,0 +1,31 @@
+# SvelteKit
+.svelte-kit/
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.output/
+
+# Deployment
+.vercel
+.netlify
+.wrangler
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.*
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# ETC
+/Paper/
+output.png
