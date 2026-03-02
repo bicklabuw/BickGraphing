@@ -1,8 +1,6 @@
 <script lang="ts">
-	type Step = {
-		title: string;
-		description: string;
-	};
+	// import { base, asset } from '$app/paths'; // keep for gitlab pages
+	type Step = { title: string; description: string };
 
 	let steps: Step[] = [
 		{
@@ -25,7 +23,7 @@
 
 <section class="min-h-screen px-6 py-5 text-gray-800">
 	<div class="mx-auto flex max-w-4xl flex-col items-center text-center">
-		<img src="/bicklab_logo.png" alt="BickLab Logo" class="mb-6 h-auto w-40" />
+		<img src={asset('/bicklab_logo.png')} alt="BickLab Logo" class="mb-6 h-auto w-40" />
 
 		<h1 class="mb-4 text-4xl font-bold tracking-tight md:text-5xl">
 			Welcome to <span class="text-purple-400">Bick Graphing</span>
@@ -37,11 +35,12 @@
 
 		<div class="flex flex-col justify-center gap-4 md:flex-row">
 			<a
-				href="/graphing"
+				href="graphing"
 				class="rounded-2xl bg-purple-500 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-purple-600"
 			>
 				Try It Now
 			</a>
+
 			<a
 				href="#howto"
 				class="rounded-2xl border border-purple-400 bg-white px-6 py-3 text-sm font-semibold text-purple-600 shadow transition hover:bg-purple-50"

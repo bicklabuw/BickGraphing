@@ -25,11 +25,11 @@
 	// 	onChange(minValue, parseFloat(val));
 	// }
 	function updateMax(val: string) {
-	const parsed = parseFloat(val);
-	if (!isNaN(parsed)) {
-		onChange(minValue, parsed);
+		const parsed = parseFloat(val);
+		if (!isNaN(parsed)) {
+			onChange(minValue, parsed);
+		}
 	}
-}
 </script>
 
 <div class="mt-4 space-y-2">
