@@ -70,7 +70,7 @@ deploy:
     - cp -r /tmp/build-copy/* .
 
     # clean .gitignore if needed
-    - find . -name ".gitignore" -delete
+    - find . -name ".gitignore" -deleteTypeScript: Restart TS Server
 
     # commit and push
     - git add .
