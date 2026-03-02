@@ -22,31 +22,33 @@
 Built for **insect bioacoustics research**—rapid quality checks on field .wav recordings. Designed for non-technical users (farmers, field techs) needing instant visual feedback during remote fieldwork.
 
 **Key motivations:**
+
 - Offline capability for field use
-- Handles hours-long recordings (~500MB peak memory)  
+- Handles hours-long recordings (~500MB peak memory)
 - No coding required—drag, adjust sliders, export PNGs
 
 ## Architecture (4 Layers)
+
 ┌─ File I/O FileSelector.svelte, FileList.svelte  
 │  
 ├─ Signal Processing ├─ FFmpeg.wasm (.wav decode)  
-│ └─ fft.ts (512pt STFT) 
+│ └─ fft.ts (512pt STFT)
 │  
 ├─ Visualization ├─ graph.svelte (orchestrator)  
 │ ├─ waveform.svelte  
 │ └─ spectrogram.svelte  
 │  
-└─ Controls RangeSlider.svelte, ViewSelector.svelte  
+└─ Controls RangeSlider.svelte, ViewSelector.svelte
 
 ## Tech Stack
 
-| Layer | Tech |
-|-------|------|
+| Layer     | Tech                              |
+| --------- | --------------------------------- |
 | Framework | SvelteKit 2.16+, TypeScript, Vite |
-| Audio | FFmpeg.wasm, Web Audio API |
-| Viz | D3.js (scales), Canvas2D |
-| Styling | TailwindCSS 3.4 |
-| Controls | noUiSlider |
+| Audio     | FFmpeg.wasm, Web Audio API        |
+| Viz       | D3.js (scales), Canvas2D          |
+| Styling   | TailwindCSS 3.4                   |
+| Controls  | noUiSlider                        |
 
 **Bundle:** ~30MB (FFmpeg + deps), loads in <5s modern browsers
 
@@ -115,6 +117,7 @@ You can preview the production build with `npm run preview`.
 - This is deployed through github pages. [Bick Graphing](https://ie-graphing-709865.pages.doit.wisc.edu)
 
 **Key improvements:**
+
 - Professional structure with badges and demo link
 - Background section explaining research context (anonymized)
 - Architecture diagram showing 4-layer design
