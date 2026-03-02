@@ -119,7 +119,6 @@
 
 		// ✅ Rerun graph generation for all
 		if (showWaveform || showSpectrogram) {
-			update_graph_versions(true, false); // triggers re-render
 			await generateVisualizations();
 		}
 
@@ -179,15 +178,6 @@
 			minAmp: minAmplitude,
 			maxAmp: maxAmplitude
 		};
-	}
-
-	function update_graph_versions(waveform: boolean, spectrogram: boolean) {
-		if (waveform) waveformVersion += 1;
-		if (spectrogram) spectrogramVersion += 1;
-
-		scrollY = window.scrollY; // Capture scroll position before re-render
-
-		if (debug) console.log('New Scroll Position:', scrollY);
 	}
 
 	async function generateVisualizations() {
@@ -252,26 +242,22 @@
 		}
 
 		isProcessing = false;
-		update_graph_versions(true, false);
 		await tick();
 	}
 
 	function handleTimeChange(event: CustomEvent<{ values: number[] }>, fileName: string) {
 		const [start, end] = event.detail.values;
 		timeRangeMap[fileName] = { start, end };
-		update_graph_versions(showWaveform, showSpectrogram);
 	}
 
 	function handleAmpChange(event: CustomEvent<{ values: number[] }>, fileName: string) {
 		const [min, max] = event.detail.values;
 		ampRangeMap[fileName] = { min, max };
-		update_graph_versions(true, false);
 	}
 
 	function handleFreqChange(event: CustomEvent<{ values: number[] }>, fileName: string) {
 		const [min, max] = event.detail.values;
 		freqRangeMap[fileName] = { min, max };
-		update_graph_versions(false, true);
 	}
 
 	function handleAllTimeChange(start: number, end: number) {
@@ -280,7 +266,6 @@
 		for (const { name } of audioDataArray) {
 			timeRangeMap[name] = { start, end };
 		}
-		update_graph_versions(showWaveform, showSpectrogram);
 	}
 
 	function handleAllAmpChange(min: number, max: number) {
@@ -290,10 +275,6 @@
 		for (const { name } of audioDataArray) {
 			ampRangeMap[name] = { min, max };
 		}
-
-		if (showWaveform) {
-			update_graph_versions(true, false);
-		}
 	}
 
 	function handleAllFreqChange(min: number, max: number) {
@@ -302,7 +283,6 @@
 		for (const { name } of audioDataArray) {
 			freqRangeMap[name] = { min, max };
 		}
-		update_graph_versions(false, true);
 	}
 
 	function handleVisChange(wave: boolean, spec: boolean) {
@@ -528,8 +508,6 @@
 
 									timeValuesMap = { ...timeValuesMap };
 									ampValuesMap = { ...ampValuesMap };
-
-									update_graph_versions(true, false);
 								}}
 							>
 								Reset Changes
@@ -742,8 +720,6 @@
 										timeValuesMap[audioFile.name] = [0, audioDurationMap[audioFile.name] ?? 10];
 
 										timeValuesMap[audioFile.name] = [0, audioDurationMap[audioFile.name] ?? 10];
-										// // Trigger re-render
-										update_graph_versions(true, false);
 									}}
 								>
 									Reset Changes
