@@ -38,7 +38,7 @@
 			]);
 
 			const raw = await ffmpeg!.readFile('waveform.raw');
-			console.log("after raw");
+			console.log('after raw');
 
 			if (!(raw instanceof Uint8Array)) {
 				throw new Error('Expected Uint8Array from FFmpeg readFile');
@@ -52,12 +52,12 @@
 
 			const spectrogram: number[][] = [];
 			for (let i = 0; i + fftSize <= data.length; i += hopSize) {
-				console.log("inside spectrogram for loop, i is " + i);
+				console.log('inside spectrogram for loop, i is ' + i);
 
 				const endIdx = i + fftSize;
 				if (endIdx > data.length) {
 					console.error(`🚫 Slice overflow! i=${i}, end=${endIdx} > length=${data.length}`);
-					break;  // Stop cleanly
+					break; // Stop cleanly
 				}
 
 				const segment = data.slice(i, i + fftSize);

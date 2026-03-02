@@ -10,7 +10,7 @@
 
 	export let scrollY: number = 0; // Initial scroll position
 
-	export let audioFileName: string = "waveform";
+	export let audioFileName: string = 'waveform';
 
 	export let computedHeight: number = 400;
 	let container: HTMLDivElement;

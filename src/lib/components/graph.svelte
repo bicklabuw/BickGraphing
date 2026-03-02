@@ -12,7 +12,6 @@
 	import Togglebutton from './togglebutton.svelte';
 	import Filelist from './filelist.svelte';
 	import Fileselector from './fileselector.svelte';
-	import { timeDay } from 'd3';
 
 	let debug = true;
 	let isProcessing = false;
@@ -324,10 +323,10 @@
 	$: {
 		for (const audioFile of audioDataArray) {
 			if (!ampValuesMap[audioFile.name]) {
-			ampValuesMap[audioFile.name] = [
-				ampRangeMap[audioFile.name]?.min ?? waveformDataMap[audioFile.name]?.minAmp ?? -0.01,
-				ampRangeMap[audioFile.name]?.max ?? waveformDataMap[audioFile.name]?.maxAmp ?? 0.01
-			];
+				ampValuesMap[audioFile.name] = [
+					ampRangeMap[audioFile.name]?.min ?? waveformDataMap[audioFile.name]?.minAmp ?? -0.01,
+					ampRangeMap[audioFile.name]?.max ?? waveformDataMap[audioFile.name]?.maxAmp ?? 0.01
+				];
 			}
 		}
 	}
@@ -335,10 +334,10 @@
 	$: {
 		for (const audioFile of audioDataArray) {
 			if (!timeValuesMap[audioFile.name]) {
-			timeValuesMap[audioFile.name] = [
-				timeRangeMap[audioFile.name]?.start ?? 0,
-				timeRangeMap[audioFile.name]?.end ?? audioDurationMap[audioFile.name] ?? 10
-			];
+				timeValuesMap[audioFile.name] = [
+					timeRangeMap[audioFile.name]?.start ?? 0,
+					timeRangeMap[audioFile.name]?.end ?? audioDurationMap[audioFile.name] ?? 10
+				];
 			}
 		}
 	}
@@ -444,33 +443,33 @@
 			{#each audioDataArray as audioFile (audioFile.name)}
 				<div class="mt-6 overflow-hidden rounded-lg border bg-gray-100 p-4 shadow">
 					<div class="mb-4 flex items-center justify-between">
-					<h3
-						class="animate-fade-in bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
-					>
-						{audioFile.name} — Waveform
-					</h3>
-					<div class="flex gap-2">
-						{#if showDownload}
-							<button
-							class="rounded-md border border-green-500 bg-green-50 px-3 py-1 text-xs font-medium text-green-700 transition hover:bg-green-100"
-							on:click={() => waveformRefs[audioFile.name]?.downloadWaveform()}
-							>
-							Download .svg
-							</button>
-						{/if}
-						<Togglebutton
-							label="Details"
-							show={showDetails}
-							onToggle={() => (showDetails = !showDetails)}
-						/>
-						<Togglebutton
-							label="Sliders"
-							show={showSliders}
-							onToggle={() => (showSliders = !showSliders)}
-						/>
+						<h3
+							class="animate-fade-in bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
+						>
+							{audioFile.name} — Waveform
+						</h3>
+						<div class="flex gap-2">
+							{#if showDownload}
+								<button
+									class="rounded-md border border-green-500 bg-green-50 px-3 py-1 text-xs font-medium text-green-700 transition hover:bg-green-100"
+									on:click={() => waveformRefs[audioFile.name]?.downloadWaveform()}
+								>
+									Download .svg
+								</button>
+							{/if}
+							<Togglebutton
+								label="Details"
+								show={showDetails}
+								onToggle={() => (showDetails = !showDetails)}
+							/>
+							<Togglebutton
+								label="Sliders"
+								show={showSliders}
+								onToggle={() => (showSliders = !showSliders)}
+							/>
+						</div>
 					</div>
-				</div>
-									
+
 					{#if showDetails}
 						<div class="mt-2 text-sm text-gray-600">
 							<p class="font-medium text-gray-800">
@@ -500,7 +499,7 @@
 						</div>
 					{/if}
 
-					<div class="flex gap-2 justify-end">
+					<div class="flex justify-end gap-2">
 						<!-- Reset button for waveform -->
 						{#if showSliders && showReset}
 							<button
@@ -583,25 +582,29 @@
 					{/key} -->
 					{#key `waveform-${audioFile.inputName}-${waveformVersion}`}
 						{#if showSliders}
-						<script>
-							// Start values for amplitude slider
-							let ampValues: [number, number] = [
-							ampRangeMap[audioFile.name]?.min ?? waveformDataMap[audioFile.name]?.minAmp ?? -0.01,
-							ampRangeMap[audioFile.name]?.max ?? waveformDataMap[audioFile.name]?.maxAmp ?? 0.01
-							];
+							<script>
+								// Start values for amplitude slider
+								let ampValues: [number, number] = [
+									ampRangeMap[audioFile.name]?.min ??
+										waveformDataMap[audioFile.name]?.minAmp ??
+										-0.01,
+									ampRangeMap[audioFile.name]?.max ??
+										waveformDataMap[audioFile.name]?.maxAmp ??
+										0.01
+								];
 
-							// Reactive sync: update ampRangeMap whenever ampValues change
-							$: ampRangeMap[audioFile.name] = { min: ampValues[0], max: ampValues[1] };
-						</script>
+								// Reactive sync: update ampRangeMap whenever ampValues change
+								$: ampRangeMap[audioFile.name] = { min: ampValues[0], max: ampValues[1] };
+							</script>
 							<!-- <div class="flex gap-4 h-full"> -->
-							<div class="flex gap-4 h-full items-stretch overflow-hidden">
-
+							<div class="flex h-full items-stretch gap-4 overflow-hidden">
 								<!-- class="flex flex-col w-32 h-full" -->
-								<div 
-									class="flex flex-col w-32 h-full"
-									style="flex: 0 0 auto; height: {waveformRefs[audioFile.name]?.computedHeight || 400}px"
+								<div
+									class="flex h-full w-32 flex-col"
+									style="flex: 0 0 auto; height: {waveformRefs[audioFile.name]?.computedHeight ||
+										400}px"
 								>
-									<div class="flex-1 flex flex-col" style="height: 100%">
+									<div class="flex flex-1 flex-col" style="height: 100%">
 										<Rangeslider
 											title="Amplitude"
 											vertical={true}
@@ -609,18 +612,22 @@
 											max={waveformDataMap[audioFile.name]?.maxAmp ?? 0.01}
 											step={0.00001}
 											start={[
-												ampRangeMap[audioFile.name]?.min ?? waveformDataMap[audioFile.name]?.minAmp ?? -0.01,
-												ampRangeMap[audioFile.name]?.max ?? waveformDataMap[audioFile.name]?.maxAmp ?? 0.01
+												ampRangeMap[audioFile.name]?.min ??
+													waveformDataMap[audioFile.name]?.minAmp ??
+													-0.01,
+												ampRangeMap[audioFile.name]?.max ??
+													waveformDataMap[audioFile.name]?.maxAmp ??
+													0.01
 											]}
 											bind:values={ampValuesMap[audioFile.name]}
 											on:change={(e) => handleAmpChange(e, audioFile.name)}
-											height=100%
+											height="100%"
 										/>
 									</div>
 								</div>
-								
+
 								<!-- Waveform in the CENTER with Time slider below -->
-								<div class="flex flex-col flex-grow">
+								<div class="flex flex-grow flex-col">
 									<!-- <div class="flex-grow h-full"> -->
 									<Waveform
 										bind:this={waveformRefs[audioFile.name]}
@@ -656,7 +663,7 @@
 							</div>
 						{:else}
 							<div class="mx-auto items-center">
-							<!-- <div class="mx-auto flex items-center justify-center"> -->
+								<!-- <div class="mx-auto flex items-center justify-center"> -->
 								<Waveform
 									waveformData={waveformDataMap[audioFile.name]?.waveform ?? []}
 									startTime={timeRangeMap[audioFile.name]?.start ?? 0}
@@ -700,56 +707,50 @@
 					</div> -->
 
 					<div class="mb-4 flex items-center justify-between">
-					<h3
-						class="animate-fade-in bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
-					>
-						{audioFile.name} — Waveform
-					</h3>
-					<div class="flex gap-2">
-						<Togglebutton
-							label="Details"
-							show={showDetails}
-							onToggle={() => (showDetails = !showDetails)}
-						/>
-						<Togglebutton
-							label="Sliders"
-							show={showSliders}
-							onToggle={() => (showSliders = !showSliders)}
-						/>
-						<!-- Reset button for waveform -->
-						{#if showSliders && showReset}
-							<button
-								class="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-50"
-								on:click={() => {
-									// Reset time range to full audio duration
-									timeRangeMap[audioFile.name] = {
-										start: 0,
-										end: audioDurationMap[audioFile.name] ?? 10
-									};
-									// Reset amplitude range to waveform's actual min/max
-									ampRangeMap[audioFile.name] = {
-										min: waveformDataMap[audioFile.name]?.minAmp ?? -0.01,
-										max: waveformDataMap[audioFile.name]?.maxAmp ?? 0.01
-									};
+						<h3
+							class="animate-fade-in bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
+						>
+							{audioFile.name} — Waveform
+						</h3>
+						<div class="flex gap-2">
+							<Togglebutton
+								label="Details"
+								show={showDetails}
+								onToggle={() => (showDetails = !showDetails)}
+							/>
+							<Togglebutton
+								label="Sliders"
+								show={showSliders}
+								onToggle={() => (showSliders = !showSliders)}
+							/>
+							<!-- Reset button for waveform -->
+							{#if showSliders && showReset}
+								<button
+									class="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-50"
+									on:click={() => {
+										// Reset time range to full audio duration
+										timeRangeMap[audioFile.name] = {
+											start: 0,
+											end: audioDurationMap[audioFile.name] ?? 10
+										};
+										// Reset amplitude range to waveform's actual min/max
+										ampRangeMap[audioFile.name] = {
+											min: waveformDataMap[audioFile.name]?.minAmp ?? -0.01,
+											max: waveformDataMap[audioFile.name]?.maxAmp ?? 0.01
+										};
 
-									timeValuesMap[audioFile.name] = [
-										0,
-										audioDurationMap[audioFile.name] ?? 10
-									];
+										timeValuesMap[audioFile.name] = [0, audioDurationMap[audioFile.name] ?? 10];
 
-									timeValuesMap[audioFile.name] = [
-										0,
-										audioDurationMap[audioFile.name] ?? 10
-									];
-									// // Trigger re-render
-									update_graph_versions(true, false);
-								}}
-							>
-								Reset Changes
-							</button>
-						{/if}
+										timeValuesMap[audioFile.name] = [0, audioDurationMap[audioFile.name] ?? 10];
+										// // Trigger re-render
+										update_graph_versions(true, false);
+									}}
+								>
+									Reset Changes
+								</button>
+							{/if}
+						</div>
 					</div>
-				</div>
 
 					{#if showDetails}
 						<div class="mt-2 text-sm text-gray-600">
