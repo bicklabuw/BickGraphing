@@ -116,13 +116,3 @@ You can preview the production build with `npm run preview`.
 ## Deployment
 
 - This is deployed through github pages. [Bick Graphing](https://ie-graphing-709865.pages.doit.wisc.edu)
-
-**Key improvements:**
-
-- Professional structure with badges and demo link
-- Background section explaining research context (anonymized)
-- Architecture diagram showing 4-layer design
-- Tech stack table
-- **Everything after "Developer Installation Guide" unchanged** as requested
-- Paper citation for review process
-- Clean, scannable format for GitHub readers
