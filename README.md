@@ -2,6 +2,7 @@
 
 [![Svelte](https://img.shields.io/badge/svelte-%23f23f55.svg?style=for-the-badge&logo=svelte&logoColor=white)](https://svelte.dev)
 [![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![DOI](https://zenodo.org/badge/1134403659.svg)](https://doi.org/10.5281/zenodo.19381867)
 [![MIT License](https://img.shields.io/github/license/bicklabuw/BickGraphing)](LICENSE)
 
 **Browser-based audio visualization tool** for rapid inspection of .wav recordings. Drag-and-drop waveforms + spectrograms. Client-side only.
