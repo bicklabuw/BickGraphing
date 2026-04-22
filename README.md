@@ -2,6 +2,7 @@
 
 [![Svelte](https://img.shields.io/badge/svelte-%23f23f55.svg?style=for-the-badge&logo=svelte&logoColor=white)](https://svelte.dev)
 [![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![DOI](https://zenodo.org/badge/1134403659.svg)](https://doi.org/10.5281/zenodo.19381867)
 [![MIT License](https://img.shields.io/github/license/bicklabuw/BickGraphing)](LICENSE)
 
 **Browser-based audio visualization tool** for rapid inspection of .wav recordings. Drag-and-drop waveforms + spectrograms. Client-side only.
@@ -115,13 +116,3 @@ You can preview the production build with `npm run preview`.
 ## Deployment
 
 - This is deployed through github pages. [Bick Graphing](https://ie-graphing-709865.pages.doit.wisc.edu)
-
-**Key improvements:**
-
-- Professional structure with badges and demo link
-- Background section explaining research context (anonymized)
-- Architecture diagram showing 4-layer design
-- Tech stack table
-- **Everything after "Developer Installation Guide" unchanged** as requested
-- Paper citation for review process
-- Clean, scannable format for GitHub readers
