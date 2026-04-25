@@ -28,6 +28,22 @@ typescript:
     - merge_requests
     - main
 
+# Runs the Vitest suite (unit + integration + librosa parity tests).
+# Fixtures under tests/fixtures/ are committed, so this job needs Node only —
+# Python is not required at CI time. Regenerate fixtures locally with
+# `npm run test:fixtures` whenever signal parameters change.
+test:
+  stage: lint
+  image: node:18
+  script:
+    - npm ci
+    - npm test
+  tags:
+    - docker
+  only:
+    - merge_requests
+    - main
+
 build:
   stage: build
   image: node:18
@@ -70,7 +86,7 @@ deploy:
     - cp -r /tmp/build-copy/* .
 
     # clean .gitignore if needed
-    - find . -name ".gitignore" -deleteTypeScript: Restart TS Server
+    - find . -name ".gitignore" -delete
 
     # commit and push
     - git add .
