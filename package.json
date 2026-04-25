@@ -12,6 +12,8 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint src",
+		"test": "vitest run",
+		"test:fixtures": "python tests/generate_440hz.py && python tests/librosa_stft.py && python tests/generate_extra_fixtures.py",
 		"commit": "npm run check && npm run format && npm run lint && npm run build && npm run preview -- --open",
 		"deploy": "cross-env GITHUB_PAGES=true npm run build && npx gh-pages -d build"
 	},
@@ -26,6 +28,8 @@
 		"@tailwindcss/typography": "^0.5.15",
 		"@tailwindcss/vite": "^4.0.0",
 		"@types/d3": "^7.4.3",
+		"@types/node": "^25.6.0",
+		"@vitest/ui": "^4.1.5",
 		"autoprefixer": "^10.4.21",
 		"cross-env": "^10.1.0",
 		"eslint": "^9.18.0",
@@ -42,10 +46,11 @@
 		"tailwindcss": "^3.4.17",
 		"typescript": "^5.0.0",
 		"typescript-eslint": "^8.20.0",
-		"vite": "^6.0.0"
+		"vite": "^6.0.0",
+		"vitest": "^4.1.5"
 	},
 	"dependencies": {
-		"@ffmpeg/core": "^0.12.10",
+		"@ffmpeg/core": "^0.12.6",
 		"@ffmpeg/ffmpeg": "^0.12.15",
 		"@ffmpeg/util": "^0.12.2",
 		"d3": "^7.9.0",
