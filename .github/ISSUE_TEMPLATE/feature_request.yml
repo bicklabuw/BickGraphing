@@ -1,0 +1,49 @@
+name: Feature request
+description: Suggest a new feature or improvement for BickGraphing.
+title: '[Feature]: '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        BickGraphing is intentionally narrow in scope: a browser-only tool for inspecting `.wav` recordings. Feature requests that keep that focus are most likely to land.
+
+        Please search [existing issues](https://github.com/bicklabuw/BickGraphing/issues?q=is%3Aissue) before opening a new one.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the use case. What are you trying to do that the tool does not currently support?
+      placeholder: When inspecting long recordings, I want to bookmark a time range so I can come back to it without scrolling.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: What would the feature look like from a user's perspective? Sketches, mockups, or rough wireframes are welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Are there existing workflows or other tools that partially solve this? What is missing from them?
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope checks
+      description: BickGraphing has a few deliberate constraints. Please confirm the request is compatible.
+      options:
+        - label: The feature can be implemented entirely client-side (no server, no uploads).
+          required: true
+        - label: The feature does not require persistent client-side storage (localStorage, IndexedDB, cookies).
+          required: false
+        - label: I searched existing issues and did not find a duplicate.
+          required: true

@@ -1,0 +1,65 @@
+name: Bug report
+description: Report something broken or unexpected in BickGraphing.
+title: '[Bug]: '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please search [existing issues](https://github.com/bicklabuw/BickGraphing/issues?q=is%3Aissue) first to avoid duplicates.
+
+        For questions tied to private datasets or unpublished research, the [Bick Lab website](https://bicklab.com) is the better contact route.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you see, and what did you expect to see instead?
+      placeholder: I dropped a 2-hour .wav into the graphing tool and the page froze for 45 seconds before showing an error.
+    validations:
+      required: true
+
+  - type: input
+    id: browser-os
+    attributes:
+      label: Browser and OS
+      description: Chromium-based browsers (Chrome, Edge, Opera) are best supported. Include version numbers if you can.
+      placeholder: Chrome 128 on Windows 11
+    validations:
+      required: true
+
+  - type: input
+    id: file-details
+    attributes:
+      label: Audio file details
+      description: Duration, sample rate, and channel count of the file that triggered the bug. If you can share the file, attach it below.
+      placeholder: 7200 s, 44.1 kHz, mono
+    validations:
+      required: false
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors
+      description: Open DevTools (F12), check the Console tab, and paste any red errors here.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or recordings
+      description: Drag-and-drop images or short clips here. Especially helpful for visual bugs.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: I can reproduce this on a fresh page load.
+          required: false

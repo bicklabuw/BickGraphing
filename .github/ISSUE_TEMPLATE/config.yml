@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Bick Lab website
+    url: https://bicklab.com
+    about: For questions tied to private datasets, unpublished research, or collaboration requests, the lab website is the preferred contact route.
+  - name: BickGraphing FAQ
+    url: https://bicklabuw.github.io/BickGraphing/faq
+    about: Common questions about supported formats, browser limits, and how the tool works.
