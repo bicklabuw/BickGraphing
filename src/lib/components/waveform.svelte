@@ -269,38 +269,44 @@
 </script>
 
 <div class="flex w-full flex-col gap-2">
-	<div class="flex justify-start">
-		{#if hasRendered}
-			<div
-				role="status"
-				aria-live="polite"
-				class="max-w-md rounded-lg bg-white px-3 py-2 text-xs shadow-sm ring-1 ring-gray-200 transition-all duration-300"
-			>
-				{#if loading}
-					<div class="flex items-center gap-2">
-						<span class="font-medium text-gray-800">Generating waveform</span>
-						<div
-							role="progressbar"
-							aria-valuemin="0"
-							aria-valuemax="100"
-							aria-valuenow={progressPercent}
-							class="h-1 w-32 overflow-hidden rounded-full bg-gray-200"
-						>
+	<div class="flex items-center justify-between gap-2">
+		<div class="flex justify-start">
+			{#if hasRendered}
+				<div
+					role="status"
+					aria-live="polite"
+					class="max-w-md rounded-lg bg-white px-3 py-2 text-xs shadow-sm ring-1 ring-gray-200 transition-all duration-300"
+				>
+					{#if loading}
+						<div class="flex items-center gap-2">
+							<span class="font-medium text-gray-800">Generating waveform</span>
 							<div
-								class="h-full rounded-full bg-blue-600 transition-all duration-200"
-								style="width: {progressPercent}%"
-							></div>
+								role="progressbar"
+								aria-valuemin="0"
+								aria-valuemax="100"
+								aria-valuenow={progressPercent}
+								class="h-1 w-32 overflow-hidden rounded-full bg-gray-200"
+							>
+								<div
+									class="h-full rounded-full bg-blue-600 transition-all duration-200"
+									style="width: {progressPercent}%"
+								></div>
+							</div>
+							<span class="tabular-nums text-gray-500">{progressPercent}%</span>
 						</div>
-						<span class="tabular-nums text-gray-500">{progressPercent}%</span>
-					</div>
-				{:else}
-					<div class="flex items-center gap-2 font-medium text-green-700">
-						<span aria-hidden="true" class="inline-block h-2 w-2 rounded-full bg-green-500"></span>
-						<span>Waveform Ready</span>
-					</div>
-				{/if}
-			</div>
-		{/if}
+					{:else}
+						<div class="flex items-center gap-2 font-medium text-green-700">
+							<span aria-hidden="true" class="inline-block h-2 w-2 rounded-full bg-green-500"
+							></span>
+							<span>Waveform Ready</span>
+						</div>
+					{/if}
+				</div>
+			{/if}
+		</div>
+		<div class="flex gap-2">
+			<slot name="actions" />
+		</div>
 	</div>
 
 	{#if loading}
