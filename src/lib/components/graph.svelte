@@ -656,32 +656,6 @@
 						</div>
 					{/if}
 
-					<div class="flex justify-end gap-2">
-						<!-- Reset button for waveform -->
-						{#if showSlidersMap[audioFile.name] && showReset}
-							<button
-								type="button"
-								aria-label={`Reset waveform amplitude and time range for ${audioFile.name}`}
-								class="rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-700 transition hover:bg-red-50"
-								on:click={() => {
-									timeRangeMap[audioFile.name] = {
-										start: 0,
-										end: audioDurationMap[audioFile.name] ?? 10
-									};
-									ampRangeMap[audioFile.name] = {
-										min: waveformDataMap[audioFile.name]?.minAmp ?? -0.01,
-										max: waveformDataMap[audioFile.name]?.maxAmp ?? 0.01
-									};
-
-									timeRangeMap = { ...timeRangeMap };
-									ampRangeMap = { ...ampRangeMap };
-								}}
-							>
-								Reset Changes
-							</button>
-						{/if}
-					</div>
-
 					<!-- {#key `waveform-${audioFile.inputName}-${waveformVersion}`}
 						<div class="mx-auto items-center">
 							<Waveform
@@ -777,7 +751,32 @@
 									audioFileName={audioFile.name}
 									loading={waveformLoadingMap[audioFile.name] ?? false}
 									audioDurationSec={audioDurationMap[audioFile.name] ?? 0}
-								/>
+								>
+									<svelte:fragment slot="actions">
+										{#if showSlidersMap[audioFile.name] && showReset}
+											<button
+												type="button"
+												aria-label={`Reset waveform amplitude and time range for ${audioFile.name}`}
+												class="rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-700 transition hover:bg-red-50"
+												on:click={() => {
+													timeRangeMap[audioFile.name] = {
+														start: 0,
+														end: audioDurationMap[audioFile.name] ?? 10
+													};
+													ampRangeMap[audioFile.name] = {
+														min: waveformDataMap[audioFile.name]?.minAmp ?? -0.01,
+														max: waveformDataMap[audioFile.name]?.maxAmp ?? 0.01
+													};
+
+													timeRangeMap = { ...timeRangeMap };
+													ampRangeMap = { ...ampRangeMap };
+												}}
+											>
+												Reset Changes
+											</button>
+										{/if}
+									</svelte:fragment>
+								</Waveform>
 
 								{#if showSlidersMap[audioFile.name]}
 									<div class="mt-2 w-full">
