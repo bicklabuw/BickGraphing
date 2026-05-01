@@ -40,7 +40,7 @@
 		const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
 
 		// Generate filename
-		const filename = `${audioFileName}_${Math.floor(startTime)}s-${Math.floor(endTime)}s.svg`;
+		const filename = `${audioFileName.replace(/\./g, '_')}_waveform_${Math.floor(startTime)}_${Math.floor(endTime)}.svg`;
 
 		// Trigger download
 		const url = URL.createObjectURL(blob);
@@ -93,14 +93,17 @@
 		};
 	});
 
-	// re-rendering
-	// $: if (container && waveformData.length > 0) {
-	// 	startTime;
-	// 	endTime;
-	// 	minAmp;
-	// 	maxAmp;
-	// 	createWaveform();
-	// }
+	// Redraw whenever incoming data or rendering params change.
+	// Without this, the component only renders on mount or container resize —
+	// so if waveformData arrives after mount (the common case), the canvas
+	// stays empty until something forces a layout reflow.
+	$: if (container && waveformData.length > 0) {
+		startTime;
+		endTime;
+		minAmp;
+		maxAmp;
+		createWaveform();
+	}
 
 	onDestroy(() => {
 		if (observer && container) observer.unobserve(container);
