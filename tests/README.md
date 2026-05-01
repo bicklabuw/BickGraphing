@@ -9,6 +9,14 @@ The Vitest test files themselves live alongside the code they test, under
 `src/lib/__tests__/`. This directory holds only the Python side and the
 generated fixtures.
 
+## Prerequisites
+
+- **Node.js 20.x and npm** — required to run the test suite.
+- **Python 3.8+ with pip** — required only to regenerate fixtures. Install Python dependencies with:
+  ```bash
+  pip install -r tests/requirements.txt
+  ```
+
 ## Quick reference
 
 ```bash
@@ -152,3 +160,11 @@ int16 quantization. To tighten, edit the third argument to
 `compareToLibrosa()` in `librosa.parity.test.ts` (default `0.01` →
 e.g. `0.001`). Tightening will make the tests more sensitive to bugs
 but also more likely to fail on minor numeric drift across platforms.
+
+## Troubleshooting
+
+If parity tests fail after regenerating fixtures, verify that the
+librosa parameters in the Python scripts match the JS pipeline
+parameters listed in the [librosa parameters](#librosa-parameters)
+table above. The most common culprits are `window` (must be symmetric
+Hann, not librosa's default periodic) and `center` (must be `False`).
