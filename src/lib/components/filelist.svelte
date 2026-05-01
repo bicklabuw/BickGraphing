@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { dndzone } from 'svelte-dnd-action';
+	import { asset } from '$app/paths';
 
 	export let selectedFiles: { id: string; name: string }[] = [];
 	export let audioDurationMap: Record<string, number> = {};
@@ -30,7 +31,7 @@
 				>
 					<div class="flex items-center gap-2 overflow-hidden">
 						<img
-							src="/icons/draggingarrowvertical.svg"
+							src={asset('/icons/draggingarrowvertical.svg')}
 							alt="Drag Icon"
 							class="h-4 w-4 opacity-60 transition group-hover:opacity-100"
 						/>
