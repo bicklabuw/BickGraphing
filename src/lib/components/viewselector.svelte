@@ -3,94 +3,50 @@
 	export let showWaveform: boolean;
 	export let showSpectrogram: boolean;
 	export let onChange: (waveform: boolean, spectrogram: boolean) => void;
-
-	function handleSelection(value: string) {
-		if (value === 'waveform') onChange(true, false);
-		else if (value === 'spectrogram') onChange(false, true);
-		else if (value === 'both') onChange(true, true);
-		else if (value === 'none') onChange(false, false);
-	}
 </script>
 
 <div class="mt-6">
 	<h3
-		class="animate-fade-in mb-4 bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
+		class="animate-fade-in mb-1 bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
 	>
 		Select Visualization Type
 	</h3>
+	<p class="mb-3 text-sm text-gray-500">Pick one or both.</p>
 
-	<div class="flex flex-col gap-2">
-		<label class="flex cursor-pointer items-center gap-3">
+	<div class="flex flex-wrap gap-2">
+		<label
+			class="flex w-fit cursor-pointer items-center gap-3 rounded-lg border border-gray-300 bg-white p-3 pr-6 shadow-sm transition hover:border-gray-400 hover:bg-gray-50 has-[:checked]:border-purple-400 has-[:checked]:bg-purple-50 has-[:checked]:shadow-md"
+		>
 			<input
-				type="radio"
-				name="view"
-				value="none"
+				type="checkbox"
 				class="peer hidden"
-				checked={!showWaveform && !showSpectrogram}
-				on:change={() => handleSelection('none')}
+				checked={showWaveform}
+				on:change={() => onChange(!showWaveform, showSpectrogram)}
 			/>
 			<span
-				class="h-4 w-4 rounded-full border border-gray-600 peer-checked:border-purple-600 peer-checked:ring-2 peer-checked:ring-purple-500"
+				class="h-5 w-5 rounded border border-gray-600 peer-checked:border-purple-600 peer-checked:bg-purple-600"
 			></span>
-			<span class="text-sm text-gray-800 peer-checked:font-semibold">No Selection</span>
-		</label>
-
-		<label class="flex cursor-pointer items-center gap-3">
-			<input
-				type="radio"
-				name="view"
-				value="waveform"
-				class="peer hidden"
-				checked={showWaveform && !showSpectrogram}
-				on:change={() => handleSelection('waveform')}
-			/>
-			<span
-				class="h-4 w-4 rounded-full border border-gray-600 peer-checked:border-purple-600 peer-checked:ring-2 peer-checked:ring-purple-500"
-			></span>
-			<span class="text-sm text-gray-800 peer-checked:font-semibold">Waveform</span>
+			<span class="text-base text-gray-800 peer-checked:font-semibold">Waveform</span>
 		</label>
 
 		<label
-			class="flex cursor-pointer items-center gap-3"
+			class="flex w-fit cursor-pointer items-center gap-3 rounded-lg border border-gray-300 bg-white p-3 pr-6 shadow-sm transition hover:border-gray-400 hover:bg-gray-50 has-[:checked]:border-purple-400 has-[:checked]:bg-purple-50 has-[:checked]:shadow-md"
 			class:opacity-50={!spectrogramOnline}
 			class:pointer-events-none={!spectrogramOnline}
 		>
 			<input
-				type="radio"
-				name="view"
-				value="spectrogram"
-				class="peer hidden"
-				checked={!showWaveform && showSpectrogram}
-				on:change={() => handleSelection('spectrogram')}
-			/>
-			<span
-				class="h-4 w-4 rounded-full border border-gray-600 peer-checked:border-purple-600 peer-checked:ring-2 peer-checked:ring-purple-500"
-			></span>
-			<span class="text-sm text-gray-800 peer-checked:font-semibold"
-				>Spectrogram (Coming Soon! Reworking for smoother performance!)</span
-			>
-		</label>
-
-		<label
-			class="flex cursor-pointer items-center gap-3"
-			class:opacity-50={!spectrogramOnline}
-			class:pointer-events-none={!spectrogramOnline}
-		>
-			<input
-				type="radio"
-				name="view"
-				value="both"
+				type="checkbox"
 				class="peer hidden"
 				disabled={!spectrogramOnline}
-				checked={showWaveform && showSpectrogram}
-				on:change={() => handleSelection('both')}
+				checked={showSpectrogram}
+				on:change={() => onChange(showWaveform, !showSpectrogram)}
 			/>
 			<span
-				class="h-4 w-4 rounded-full border border-gray-600 peer-checked:border-purple-600 peer-checked:ring-2 peer-checked:ring-purple-500"
+				class="h-5 w-5 rounded border border-gray-600 peer-checked:border-purple-600 peer-checked:bg-purple-600"
 			></span>
-			<span class="text-sm text-gray-800 peer-checked:font-semibold"
-				>Both Waveform and Spectrogram (Coming Soon! Reworking for smoother performance!)</span
-			>
+			<span class="text-base text-gray-800 peer-checked:font-semibold">
+				Spectrogram{#if !spectrogramOnline} (Coming Soon! Reworking for smoother performance!){/if}
+			</span>
 		</label>
 	</div>
 </div>

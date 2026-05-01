@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { asset } from '$app/paths';
 
 	let fileInput: HTMLInputElement;
 	export let disabled = false;
@@ -73,7 +74,7 @@
 	class="mt-6 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-blue-300 bg-white px-6 py-12 text-center text-sm text-gray-600 transition hover:border-blue-400 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
 >
 	<img
-		src="/icons/folder.svg"
+		src={asset('/icons/folder.svg')}
 		alt="Upload Folder Icon"
 		class="h-10 w-10 text-blue-400 opacity-80"
 	/>
