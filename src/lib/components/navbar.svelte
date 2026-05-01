@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { base, asset } from '$app/paths';
+
 	let parallaxX = 50;
 	let parallaxY = 50;
 
@@ -15,14 +17,14 @@
 >
 	<div
 		class="nav-texture absolute inset-0"
-		style="background-position: {parallaxX}% {parallaxY}%"
+		style="background-image: url({asset('/textures/green-frosted-noise.jpg')}); background-position: {parallaxX}% {parallaxY}%"
 	></div>
 
 	<div class="pointer-events-none absolute inset-0 bg-white/50"></div>
 
 	<div class="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-		<a href="/" class="flex items-center gap-3">
-			<img src="/bicklab_logo.png" alt="BickLab Logo" class="h-8 w-auto" />
+		<a href="{base}/" class="flex items-center gap-3">
+			<img src={asset('/bicklab_logo.png')} alt="BickLab Logo" class="h-8 w-auto" />
 			<span class="font-bugslife text-lg font-semibold tracking-tight text-gray-800">
 				Bick Graphing
 			</span>
@@ -31,19 +33,19 @@
 		<div class="hidden items-center gap-3 md:flex">
 			<!-- Internal Links -->
 			<a
-				href="/"
+				href="{base}/"
 				class="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:text-purple-600"
 			>
 				Home
 			</a>
 			<a
-				href="/graphing"
+				href="{base}/graphing"
 				class="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:text-purple-600"
 			>
 				Graphing Tool
 			</a>
 			<a
-				href="/faq"
+				href="{base}/faq"
 				class="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:text-purple-600"
 			>
 				FAQ
@@ -67,10 +69,8 @@
 
 <style>
 	.nav-texture {
-		background-image: url('/textures/green-frosted-noise.jpg');
 		background-size: 140%;
 		background-repeat: repeat;
-		background-position: center;
 		opacity: 0.2;
 		transition: background-position 0.1s ease;
 	}

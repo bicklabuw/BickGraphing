@@ -50,6 +50,7 @@
 	let maxFreq = 5000;
 
 	let waveformRefs: Record<string, Waveform | null> = {};
+	let waveformHeights: Record<string, number> = {};
 
 	let showWaveform = false;
 	let showSpectrogram = false;
@@ -579,8 +580,7 @@
 								<!-- class="flex flex-col w-32 h-full" -->
 								<div
 									class="flex h-full w-32 flex-col"
-									style="flex: 0 0 auto; height: {waveformRefs[audioFile.name]?.computedHeight ||
-										400}px"
+									style="flex: 0 0 auto; height: {waveformHeights[audioFile.name] || 400}px"
 								>
 									<div class="flex flex-1 flex-col" style="height: 100%">
 										<Rangeslider
@@ -609,6 +609,7 @@
 									<!-- <div class="flex-grow h-full"> -->
 									<Waveform
 										bind:this={waveformRefs[audioFile.name]}
+										bind:computedHeight={waveformHeights[audioFile.name]}
 										waveformData={waveformDataMap[audioFile.name]?.waveform ?? []}
 										startTime={timeRangeMap[audioFile.name]?.start ?? 0}
 										endTime={timeRangeMap[audioFile.name]?.end ?? 10}
@@ -618,6 +619,7 @@
 										maxAmp={ampRangeMap[audioFile.name]?.max ??
 											waveformDataMap[audioFile.name]?.maxAmp ??
 											maxAmp}
+										audioFileName={audioFile.name}
 										{scrollY}
 									/>
 									<!-- </div> -->
@@ -652,6 +654,7 @@
 									maxAmp={ampRangeMap[audioFile.name]?.max ??
 										waveformDataMap[audioFile.name]?.maxAmp ??
 										maxAmp}
+									audioFileName={audioFile.name}
 									{scrollY}
 								/>
 							</div>
@@ -688,7 +691,7 @@
 						<h3
 							class="animate-fade-in bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
 						>
-							{audioFile.name} — Waveform
+							{audioFile.name} — Spectrogram
 						</h3>
 						<div class="flex gap-2">
 							<Togglebutton
