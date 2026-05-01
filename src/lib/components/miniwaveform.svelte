@@ -30,7 +30,17 @@
 		if (observer && relative_parent) observer.unobserve(relative_parent);
 	});
 
-	// $: if (waveformData.length > 0) draw();
+	// Redraw whenever incoming data or rendering params change.
+	// Without this, the component only renders on mount or container resize —
+	// so if waveformData arrives after mount (the common case), the canvas
+	// stays empty until something forces a layout reflow.
+	$: if (container && waveformData.length > 0) {
+		startTime;
+		endTime;
+		minAmp;
+		maxAmp;
+		draw();
+	}
 
 	function draw() {
 		console.log('Container:', container);
