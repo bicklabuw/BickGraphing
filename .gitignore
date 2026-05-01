@@ -29,3 +29,17 @@ vite.config.ts.timestamp-*
 # ETC
 /Paper/
 output.png
+
+# Editor backups
+*~
+*.un~
+
+# Claude Code local settings
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+
+# Personal scratch area
+workingbranch/
