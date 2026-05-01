@@ -1,5 +1,6 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
+import { base } from '$app/paths';
 
 /**
  * Initialize FFmpeg
@@ -8,8 +9,8 @@ export async function initFFmpeg() {
 	try {
 		const ffmpeg = new FFmpeg();
 		await ffmpeg.load({
-			coreURL: '/ffmpeg-core/esm/ffmpeg-core.js',
-			wasmURL: '/ffmpeg-core/esm/ffmpeg-core.wasm'
+			coreURL: `${base}/ffmpeg-core/esm/ffmpeg-core.js`,
+			wasmURL: `${base}/ffmpeg-core/esm/ffmpeg-core.wasm`
 		});
 
 		console.log('FFmpeg loaded successfully - offline mode active');

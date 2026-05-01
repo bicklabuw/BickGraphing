@@ -1,5 +1,5 @@
 <script lang="ts">
-	// import { base, asset } from '$app/paths'; // keep for gitlab pages
+	import { base, asset } from '$app/paths';
 	type Step = { title: string; description: string };
 
 	let steps: Step[] = [
@@ -21,7 +21,7 @@
 	];
 </script>
 
-<section class="min-h-screen px-6 py-5 text-gray-800">
+<section class="px-6 py-16 text-gray-800">
 	<div class="mx-auto flex max-w-4xl flex-col items-center text-center">
 		<img src={asset('/bicklab_logo.png')} alt="BickLab Logo" class="mb-6 h-auto w-40" />
 
@@ -35,7 +35,7 @@
 
 		<div class="flex flex-col justify-center gap-4 md:flex-row">
 			<a
-				href="graphing"
+				href="{base}/graphing"
 				class="rounded-2xl bg-purple-500 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-purple-600"
 			>
 				Try It Now
@@ -76,7 +76,7 @@
 <section class=" px-6 py-14 text-gray-800">
 	<div class="mx-auto max-w-5xl text-center">
 		<h2 class="mb-12 text-3xl font-bold text-gray-900">Why Use Bick Graphing?</h2>
-		<div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+		<div class="grid grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
 			<div
 				class="flex flex-col items-center rounded-xl bg-white p-6 shadow-md transition hover:shadow-lg"
 			>
@@ -146,7 +146,7 @@
 
 		<div class="mt-8 text-center">
 			<a
-				href="/faq"
+				href="{base}/faq"
 				class="inline-block rounded-xl border border-purple-500 px-5 py-2 text-sm font-semibold text-purple-600 transition hover:bg-purple-50"
 			>
 				View All FAQs
