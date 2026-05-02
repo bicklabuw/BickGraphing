@@ -1,3 +1,14 @@
+/**
+ * In-place Cooley–Tukey radix-2 FFT.
+ *
+ * Computes the magnitude spectrum |X[k]| of a real-valued signal whose
+ * length N is a power of 2. Only the first N/2 bins are returned — the
+ * upper half is the complex conjugate of the lower half for real input.
+ *
+ * @param input - Real-valued signal samples; length must be a power of 2.
+ * @returns Magnitude spectrum of length N/2.
+ * @throws Error if `input.length` is not a power of 2.
+ */
 export function fft(input: number[]) {
 	const N = input.length;
 	if ((N & (N - 1)) !== 0) {
@@ -51,6 +62,14 @@ export function fft(input: number[]) {
 	return magnitude;
 }
 
+/**
+ * Splits a sample stream into overlapping frames for STFT analysis.
+ *
+ * @param samples - Input audio samples.
+ * @param windowSize - Frame length in samples (default 1024).
+ * @param hopSize - Step between successive frames in samples (default 512, i.e. 50% overlap).
+ * @returns Array of frame views over `samples`.
+ */
 export function createWindows(samples: Float32Array, windowSize = 1024, hopSize = 512) {
 	const windows = [];
 	for (let i = 0; i + windowSize <= samples.length; i += hopSize) {

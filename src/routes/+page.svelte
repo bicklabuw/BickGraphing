@@ -1,3 +1,13 @@
+<!--
+  @component
+  Description: Landing page with the hero section, lab logo, and "how to" walkthrough steps.
+
+  @author Grace Steinmetz <gesparkles@gmail.com>
+  @contributors K. Seow <kseow@wisc.edu>
+  @created 2025-04-01
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
 	import { base, asset } from '$app/paths';
 	type Step = { title: string; description: string };

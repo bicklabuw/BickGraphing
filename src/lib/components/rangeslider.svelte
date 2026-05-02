@@ -1,19 +1,42 @@
+<!--
+  @component
+  Description: Dual-handle noUiSlider wrapper for selecting a numeric range, with optional inline inputs.
+
+  @author K. Seow <kseow@wisc.edu>
+  @contributors Grace Steinmetz <gesparkles@gmail.com>
+  @created 2025-05-30
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import noUiSlider from 'nouislider';
 	import 'nouislider/dist/nouislider.css';
 
+	/** Heading shown above the slider. */
 	export let title = 'Test Title';
+	/** Lower bound of the slider's full range. */
 	export let min = -100;
+	/** Upper bound of the slider's full range. */
 	export let max = 3000;
+	/** Initial `[lowHandle, highHandle]` positions. */
 	export let start = [10, 1000]; // default start range
+	/** Step granularity for handle movement. */
 	export let step = 0.0001;
+	/**
+	 * Display formatter passed straight to noUiSlider. `to` formats numbers
+	 * for display; `from` parses user input back into numbers. Override to
+	 * change precision or to add unit suffixes.
+	 */
 	export let format = {
 		to: (value: number) => value.toFixed(5),
 		from: (value: string) => parseFloat(value)
 	};
+	/** When true, renders the slider top-to-bottom instead of left-to-right (used for amplitude axes). */
 	export let vertical: boolean = false;
+	/** When true, shows numeric text inputs alongside the handles for direct entry. */
 	export let showInputs: boolean = true;
+	/** Two-way bindable `[low, high]` value pair — bind with `bind:values={...}` to keep the parent's state in sync. */
 	export let values: [number, number] = [start[0], start[1]];
 
 	let minRange: number = start[0];
@@ -22,6 +45,7 @@
 	let minRangeStr: string = start[0].toString();
 	let maxRangeStr: string = start[1].toString();
 
+	/** Optional height override for the vertical layout (e.g. `"100%"` or `400`). When undefined a sensible default is used. */
 	export let height: number | string | undefined = undefined;
 
 	import { createEventDispatcher } from 'svelte';

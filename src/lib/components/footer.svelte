@@ -1,3 +1,13 @@
+<!--
+  @component
+  Description: Site footer with a parallax frosted-noise background and lab/version info.
+
+  @author Grace Steinmetz <gesparkles@gmail.com>
+  @contributors K. Seow <kseow@wisc.edu>
+  @created 2025-05-30
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
 	import { base, asset } from '$app/paths';
 
@@ -33,7 +43,7 @@
 					href="https://github.com/kayleyseow"
 					target="_blank"
 					rel="noopener noreferrer"
-					class="transition hover:text-green-600">Kayley S.</a
+					class="transition hover:text-green-600">K. Seow</a
 				>
 			</p>
 			<p class="text-xs text-gray-500">

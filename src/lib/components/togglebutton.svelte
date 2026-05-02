@@ -1,3 +1,13 @@
+<!--
+  @component
+  Description: Show/hide toggle button used to reveal optional UI details.
+
+  @author Grace Steinmetz <gesparkles@gmail.com>
+  @contributors
+  @created 2025-05-30
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
 	export let label = 'Details';
 	export let show = false;
