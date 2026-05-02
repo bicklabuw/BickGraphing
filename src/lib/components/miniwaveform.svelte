@@ -1,13 +1,29 @@
+<!--
+  @component
+  Description: Compact D3 waveform thumbnail used as a navigation overview of the full audio.
+
+  @author Alex Arovas <aarovas@wisc.edu>
+  @contributors Grace Steinmetz <gesparkles@gmail.com>, K. Seow <kseow@wisc.edu>
+  @created 2025-04-01
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import * as d3 from 'd3';
 
+	/** Pre-decoded `{time, amplitude}` series for the audio segment to render. The parent downsamples upstream so this component doesn't have to. */
 	export let waveformData: { time: number; amplitude: number }[] = [];
+	/** Lower bound of the x-axis (time, in seconds). */
 	export let startTime = 0;
+	/** Upper bound of the x-axis (time, in seconds). */
 	export let endTime = 10;
+	/** Lower bound of the y-axis (amplitude). */
 	export let minAmp = -1;
+	/** Upper bound of the y-axis (amplitude). */
 	export let maxAmp = 1;
 
+	/** Filename shown in the title strip; defaults to `'UNKNOWN'` when the parent forgets to pass it. */
 	export let audioFileName: string = 'UNKNOWN';
 
 	let container: HTMLDivElement;

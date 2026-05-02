@@ -1,23 +1,49 @@
+<!--
+  @component
+  Description: Full-width D3 waveform renderer with scroll handling and download-as-SVG support.
+
+  @author Alex Arovas <aarovas@wisc.edu>
+  @contributors K. Seow <kseow@wisc.edu>, Grace Steinmetz <gesparkles@gmail.com>
+  @created 2025-04-01
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import * as d3 from 'd3';
 
+	/** Pre-decoded `{time, amplitude}` series for the audio segment to render. */
 	export let waveformData: { time: number; amplitude: number }[] = [];
+	/** Lower bound of the x-axis (time, in seconds). */
 	export let startTime = 0;
+	/** Upper bound of the x-axis (time, in seconds). */
 	export let endTime = 10;
+	/** Lower bound of the y-axis (amplitude). */
 	export let minAmp = -1;
+	/** Upper bound of the y-axis (amplitude). */
 	export let maxAmp = 1;
 
-	export let scrollY: number = 0; // Initial scroll position
+	/** Initial vertical scroll offset within the rendered SVG. */
+	export let scrollY: number = 0;
 
+	/** Filename used as the SVG title and as the basename for `Download .svg`. */
 	export let audioFileName: string = 'waveform';
 
+	/** Two-way bindable: the rendered SVG's measured height in pixels. The parent reads this with `bind:computedHeight={...}` to keep the adjacent vertical amplitude slider the same height as the waveform. */
 	export let computedHeight: number = 400;
 	let container: HTMLDivElement;
 	let observer: ResizeObserver | undefined;
 
 	let initialScroll = false; // Flag to handle initial scroll position
 
+	/**
+	 * Serializes the rendered SVG to a file and triggers a browser download.
+	 *
+	 * Exposed so the parent can wire up a "Download .svg" button via
+	 * `bind:this`. The clone is patched with a white background rectangle
+	 * before serialization so the saved file looks correct outside the
+	 * page's dark surrounding chrome.
+	 */
 	export function downloadWaveform() {
 		if (!container) return;
 

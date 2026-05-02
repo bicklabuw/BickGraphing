@@ -1,11 +1,29 @@
+<!--
+  @component
+  Description: Numeric min/max input pair for editing an amplitude or time range.
+
+  @author Grace Steinmetz <gesparkles@gmail.com>
+  @contributors K. Seow <kseow@wisc.edu>
+  @created 2025-05-30
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
+	/** Heading rendered above the input pair (e.g. "Time Range"). */
 	export let label: string;
+	/** Optional unit string shown alongside the label (e.g. "(seconds)", "(Hz)"). */
 	export let unit: string = '';
+	/** Caption above the min input. */
 	export let minLabel: string = 'Min';
+	/** Caption above the max input. */
 	export let maxLabel: string = 'Max';
+	/** Current minimum value. Treated as the source of truth — the local string is re-synced from this on every parent update. */
 	export let minValue: number;
+	/** Current maximum value. */
 	export let maxValue: number;
+	/** Step granularity passed to the underlying `<input type="number">`. */
 	export let step: number = 0.00001;
+	/** Called whenever either input commits a new valid number. Always receives the full `(min, max)` pair so the parent can update both at once. */
 	export let onChange: (min: number, max: number) => void;
 
 	let localMin: string = minValue.toString(); // Local string for editing

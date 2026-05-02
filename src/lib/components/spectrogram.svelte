@@ -1,12 +1,28 @@
+<!--
+  @component
+  Description: Generates and renders an STFT spectrogram from a .wav file using FFmpeg and D3.
+
+  @author Grace Steinmetz <gesparkles@gmail.com>
+  @contributors K. Seow <kseow@wisc.edu>
+  @created 2025-04-01
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
 	import type { FFmpeg } from '@ffmpeg/ffmpeg';
 	import * as d3 from 'd3';
 
+	/** FFmpeg instance loaded by the parent (used for audio decoding). */
 	export let ffmpeg: FFmpeg | null = null;
+	/** Filename of the input audio in FFmpeg's virtual filesystem. */
 	export let inputFileName: string | null = null;
+	/** Start of the analysis window, in seconds. */
 	export let startTime = 0;
+	/** End of the analysis window, in seconds. */
 	export let endTime = 15;
+	/** Lower frequency bound for the rendered spectrogram, in Hz. */
 	export let minFreq = 0;
+	/** Upper frequency bound for the rendered spectrogram, in Hz. */
 	export let maxFreq = 5000;
 
 	let container: HTMLDivElement;
@@ -17,6 +33,18 @@
 		generateSpectrogram();
 	}
 
+	/**
+	 * Decodes the selected segment via FFmpeg, computes an STFT magnitude
+	 * spectrogram, and renders it with D3.
+	 *
+	 * Pipeline:
+	 *   1. FFmpeg trims `[startTime, endTime]` and emits mono 32-bit float PCM.
+	 *   2. PCM is framed into overlapping Hann windows (2048 samples, 50% hop).
+	 *   3. Per-frame magnitudes are log10-compressed for dynamic range.
+	 *   4. D3 paints the resulting time × frequency grid as a heatmap.
+	 *
+	 * Sample rate is fixed at 44.1 kHz to match the FFmpeg transcode upstream.
+	 */
 	async function generateSpectrogram() {
 		try {
 			status = 'Extracting audio...';
@@ -76,6 +104,13 @@
 		}
 	}
 
+	/**
+	 * Naive O(N²) DFT magnitude with an applied Hann window.
+	 *
+	 * Used inline here to keep the spectrogram pipeline self-contained.
+	 * For larger N or performance-sensitive paths, prefer the optimized
+	 * radix-2 implementation in `src/lib/utils/fft.ts`.
+	 */
 	function fft(signal: Float32Array): number[] {
 		const N = signal.length;
 		const windowed = signal.map((v, i) => v * 0.5 * (1 - Math.cos((2 * Math.PI * i) / (N - 1))));
@@ -94,8 +129,14 @@
 		return Array.from(out);
 	}
 
+	/**
+	 * Renders the STFT magnitude grid as a heatmap with time/frequency
+	 * axes and a Turbo-colormap legend.
+	 *
+	 * @param data - Row-major STFT magnitudes (`data[t][f]`).
+	 * @param sampleRate - Audio sample rate in Hz, used to map bins to frequency.
+	 */
 	function drawWithD3(data: number[][], sampleRate: number) {
-		//fftSize: number
 		const margin = { top: 20, right: 60, bottom: 40, left: 60 }; // more right margin
 		const width = 800 - margin.left - margin.right;
 		const height = 400 - margin.top - margin.bottom;

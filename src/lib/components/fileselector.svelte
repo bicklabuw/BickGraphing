@@ -1,11 +1,28 @@
+<!--
+  @component
+  Description: Hidden file-input wrapper that dispatches selected or dropped audio files.
+
+  @author Grace Steinmetz <gesparkles@gmail.com>
+  @contributors K. Seow <kseow@wisc.edu>, Alex Arovas <aarovas@wisc.edu>
+  @created 2025-04-01
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { asset } from '$app/paths';
 
 	let fileInput: HTMLInputElement;
+	/** When true, blocks both clicks and drops — used by the parent while FFmpeg is still loading or a batch is processing. */
 	export let disabled = false;
+	/** Comma-separated list of extensions/MIME types passed straight to the underlying `<input accept>`. */
 	export let accept = '.wav';
 
+	/**
+	 * Emits a `select` CustomEvent whose `detail` is the `FileList` chosen by
+	 * the user (via click, keyboard, or drag-and-drop). The parent is
+	 * responsible for filtering duplicates and de-duping by filename.
+	 */
 	const dispatch = createEventDispatcher();
 
 	function openFileSelector() {

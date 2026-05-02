@@ -1,3 +1,13 @@
+<!--
+  @component
+  Description: Spectrogram-only route with FFmpeg initialization scaffolding and load/error states.
+
+  @author K. Seow <kseow@wisc.edu>
+  @contributors
+  @created 2026-04-30
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { base, asset } from '$app/paths';

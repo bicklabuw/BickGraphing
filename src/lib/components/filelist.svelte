@@ -1,10 +1,24 @@
+<!--
+  @component
+  Description: Sortable list of selected audio files with drag-and-drop reordering.
+
+  @author Grace Steinmetz <gesparkles@gmail.com>
+  @contributors K. Seow <kseow@wisc.edu>
+  @created 2025-05-30
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
 	import { dndzone } from 'svelte-dnd-action';
 	import { asset } from '$app/paths';
 
+	/** Ordered list of files currently chosen by the user; each entry has a stable id (used as the dnd key) and the original filename. */
 	export let selectedFiles: { id: string; name: string }[] = [];
+	/** Lookup of `filename → duration in seconds`, populated as files are decoded. Used to display audio length next to each row. */
 	export let audioDurationMap: Record<string, number> = {};
+	/** Callback fired when the user clicks the remove button on a row. Receives the filename so the parent can purge it from all per-file maps. */
 	export let removeFile: (name: string) => void;
+	/** Handler for both `consider` and `finalize` events from svelte-dnd-action — receives the reordered items in `event.detail.items`. */
 	export let handleReorder: (event: CustomEvent) => void;
 </script>
 
