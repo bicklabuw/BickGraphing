@@ -1,3 +1,13 @@
+<!--
+  @component
+  Description: Root SvelteKit layout — wraps every page with the navbar, content slot, and footer.
+
+  @author K. Seow <kseow@wisc.edu>
+  @contributors Grace Steinmetz <gesparkles@gmail.com>
+  @created 2025-04-01
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
 	import '../app.css';
 	import { asset } from '$app/paths';
