@@ -1,7 +1,21 @@
+<!--
+  @component
+  Description: Checkbox group for choosing waveform and/or spectrogram visualization.
+
+  @author Grace Steinmetz <gesparkles@gmail.com>
+  @contributors K. Seow <kseow@wisc.edu>
+  @created 2025-05-30
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
+	/** Set to false to grey out and disable the spectrogram checkbox — used as a kill-switch when FFmpeg isn't ready or spectrogram support is intentionally off. */
 	export let spectrogramOnline: boolean = true;
+	/** Whether the waveform checkbox is currently checked. */
 	export let showWaveform: boolean;
+	/** Whether the spectrogram checkbox is currently checked. */
 	export let showSpectrogram: boolean;
+	/** Called whenever either checkbox toggles, with the new `(waveform, spectrogram)` pair so the parent can act on both flags atomically. */
 	export let onChange: (waveform: boolean, spectrogram: boolean) => void;
 </script>
 

@@ -1,3 +1,14 @@
+<!--
+  @component
+  Description: Main graphing orchestrator — loads audio files, initializes FFmpeg, and renders waveform and spectrogram views with shared controls.
+
+  @author Grace Steinmetz <gesparkles@gmail.com>
+  @author K. Seow <kseow@wisc.edu>
+  @contributors Alex Arovas <aarovas@wisc.edu>
+  @created 2025-05-30
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { initFFmpeg } from '$lib/utils/audioProcessing';
@@ -72,6 +83,19 @@
 		}
 	});
 
+	/**
+	 * Ingests one or more user-selected audio files.
+	 *
+	 * For each new file we (a) write the bytes into FFmpeg's virtual FS
+	 * under a sanitized name, (b) decode it once with the WebAudio API to
+	 * read the duration, and (c) seed the per-file time / amplitude /
+	 * frequency range maps with sensible defaults. If a waveform or
+	 * spectrogram view is already open, visualizations are regenerated
+	 * automatically so newly added files appear immediately.
+	 *
+	 * Files already present in `selectedFiles` are silently skipped so
+	 * re-dropping the same file is a no-op.
+	 */
 	async function processFiles(files: FileList | File[]) {
 		const newFiles = Array.from(files).filter(
 			(file) => !selectedFiles.some((f) => f.name === file.name)
@@ -126,6 +150,10 @@
 		isProcessing = false;
 	}
 
+	/**
+	 * Synchronizes the underlying file arrays with the user's
+	 * drag-and-drop reorder coming from the file list component.
+	 */
 	function handleReorder({ detail }: CustomEvent) {
 		selectedFiles = detail.items;
 
@@ -138,6 +166,10 @@
 			.filter((a): a is { name: string; inputName: string } => a !== undefined);
 	}
 
+	/**
+	 * Removes a single file and tears down its derived state across all
+	 * per-file maps so memory isn't held after the user clears it.
+	 */
 	function removeFile(name: string) {
 		selectedFiles = selectedFiles.filter((f) => f.name !== name);
 		originalAudioFiles = originalAudioFiles.filter((f) => f.name !== name);
@@ -146,6 +178,15 @@
 		delete audioDurationMap[name];
 	}
 
+	/**
+	 * Reduces a slice `[start, end]` of an `AudioBuffer` to a plot-friendly
+	 * `{time, amplitude}` series and reports the sample's amplitude extent.
+	 *
+	 * Output is capped at ~5000 points by striding — enough resolution for
+	 * typical screen widths while keeping rendering responsive on long
+	 * clips. Only the first channel is read; for stereo input this is
+	 * effectively the left channel.
+	 */
 	function extractWaveformData(audioBuffer: AudioBuffer, start: number, end: number) {
 		const sampleRate = audioBuffer.sampleRate;
 		const startSample = Math.floor(start * sampleRate);
@@ -181,6 +222,14 @@
 		};
 	}
 
+	/**
+	 * Re-decodes every loaded file and rebuilds the waveform data map
+	 * (and amplitude bounds) for whichever views are currently visible.
+	 *
+	 * Drives the progress bar shown during long batches. Files whose
+	 * selected `[start, end]` range falls outside their actual duration
+	 * are skipped with a warning rather than aborting the whole batch.
+	 */
 	async function generateVisualizations() {
 		if (!isFFmpegReady || !ffmpeg) {
 			alert(
@@ -286,6 +335,12 @@
 		}
 	}
 
+	/**
+	 * Toggles the waveform / spectrogram views and triggers a
+	 * regeneration when needed. Bumping `*Version` invalidates the
+	 * `{#key ...}` blocks downstream so the children remount cleanly
+	 * instead of trying to diff stale data.
+	 */
 	function handleVisChange(wave: boolean, spec: boolean) {
 		const changedWaveform = wave !== showWaveform;
 		const changedSpectrogram = spec !== showSpectrogram;
@@ -301,6 +356,13 @@
 		if (changedSpectrogram) spectrogramVersion += 1;
 	}
 
+	// Per-file slider state. The first two reactive blocks lazily seed
+	// `ampValuesMap` and `timeValuesMap` from each file's natural extent
+	// (or the global defaults) the first time it appears, so newly added
+	// files get sensible slider positions without overwriting any prior
+	// user edits. The third block is the inverse direction: whenever the
+	// slider values change, push them back into the canonical
+	// `ampRangeMap` / `timeRangeMap` consumed by the renderers.
 	$: {
 		for (const audioFile of audioDataArray) {
 			if (!ampValuesMap[audioFile.name]) {

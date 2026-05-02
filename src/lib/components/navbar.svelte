@@ -1,3 +1,13 @@
+<!--
+  @component
+  Description: Top navigation bar with a parallax frosted-noise background and site links.
+
+  @author Grace Steinmetz <gesparkles@gmail.com>
+  @contributors K. Seow <kseow@wisc.edu>
+  @created 2025-05-30
+  @version 1.0.1
+  @license MIT
+-->
 <script lang="ts">
 	import { base, asset } from '$app/paths';
 
