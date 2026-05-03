@@ -12,6 +12,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { initFFmpeg } from '$lib/utils/audioProcessing';
+	import { extractWaveformData } from '$lib/utils/waveformData';
 	import type { FFmpeg } from '@ffmpeg/ffmpeg';
 	import { fetchFile } from '@ffmpeg/util';
 	import Waveform from './waveform.svelte';
@@ -178,49 +179,50 @@
 		delete audioDurationMap[name];
 	}
 
-	/**
-	 * Reduces a slice `[start, end]` of an `AudioBuffer` to a plot-friendly
-	 * `{time, amplitude}` series and reports the sample's amplitude extent.
-	 *
-	 * Output is capped at ~5000 points by striding — enough resolution for
-	 * typical screen widths while keeping rendering responsive on long
-	 * clips. Only the first channel is read; for stereo input this is
-	 * effectively the left channel.
-	 */
-	function extractWaveformData(audioBuffer: AudioBuffer, start: number, end: number) {
-		const sampleRate = audioBuffer.sampleRate;
-		const startSample = Math.floor(start * sampleRate);
-		const endSample = Math.min(Math.floor(end * sampleRate), audioBuffer.length);
-		const channelData = audioBuffer.getChannelData(0);
-		const maxPoints = 5000;
-		const totalSamples = endSample - startSample;
-		const step = totalSamples > maxPoints ? Math.floor(totalSamples / maxPoints) : 1;
-		const waveform = [];
-
-		let minAmplitude = Infinity;
-		let maxAmplitude = -Infinity;
-
-		for (let i = startSample; i < endSample; i += step) {
-			waveform.push({
-				time: i / sampleRate,
-				amplitude: channelData[i]
-			});
-
-			minAmplitude = Math.min(minAmplitude, channelData[i]);
-			maxAmplitude = Math.max(maxAmplitude, channelData[i]);
-		}
-
-		if (debug) {
-			console.log(`Extracted waveform data from ${start}s to ${end}s: ${waveform.length} points`);
-			console.log(`Amplitude range: ${minAmplitude} to ${maxAmplitude}`);
-		}
-
-		return {
-			waveform: waveform,
-			minAmp: minAmplitude,
-			maxAmp: maxAmplitude
-		};
-	}
+	// Extracted to `$lib/utils/waveformData.ts` for unit testing.
+	// /**
+	//  * Reduces a slice `[start, end]` of an `AudioBuffer` to a plot-friendly
+	//  * `{time, amplitude}` series and reports the sample's amplitude extent.
+	//  *
+	//  * Output is capped at ~5000 points by striding — enough resolution for
+	//  * typical screen widths while keeping rendering responsive on long
+	//  * clips. Only the first channel is read; for stereo input this is
+	//  * effectively the left channel.
+	//  */
+	// function extractWaveformData(audioBuffer: AudioBuffer, start: number, end: number) {
+	// 	const sampleRate = audioBuffer.sampleRate;
+	// 	const startSample = Math.floor(start * sampleRate);
+	// 	const endSample = Math.min(Math.floor(end * sampleRate), audioBuffer.length);
+	// 	const channelData = audioBuffer.getChannelData(0);
+	// 	const maxPoints = 5000;
+	// 	const totalSamples = endSample - startSample;
+	// 	const step = totalSamples > maxPoints ? Math.floor(totalSamples / maxPoints) : 1;
+	// 	const waveform = [];
+	//
+	// 	let minAmplitude = Infinity;
+	// 	let maxAmplitude = -Infinity;
+	//
+	// 	for (let i = startSample; i < endSample; i += step) {
+	// 		waveform.push({
+	// 			time: i / sampleRate,
+	// 			amplitude: channelData[i]
+	// 		});
+	//
+	// 		minAmplitude = Math.min(minAmplitude, channelData[i]);
+	// 		maxAmplitude = Math.max(maxAmplitude, channelData[i]);
+	// 	}
+	//
+	// 	if (debug) {
+	// 		console.log(`Extracted waveform data from ${start}s to ${end}s: ${waveform.length} points`);
+	// 		console.log(`Amplitude range: ${minAmplitude} to ${maxAmplitude}`);
+	// 	}
+	//
+	// 	return {
+	// 		waveform: waveform,
+	// 		minAmp: minAmplitude,
+	// 		maxAmp: maxAmplitude
+	// 	};
+	// }
 
 	/**
 	 * Re-decodes every loaded file and rebuilds the waveform data map
