@@ -65,6 +65,68 @@ export function argmax(arr: ArrayLike<number>): number {
 	return best;
 }
 
+// Permissive mono PCM WAV loader — accepts 16- or 24-bit. Falls back to
+// reading until EOF when the data-chunk size header is implausible (the
+// scipy-written tests/test.wav reports size = 0). Used by integration tests
+// that need to exercise real fixtures outside the STFT 16-bit format.
+export function loadWavMono(path: string): {
+	sampleRate: number;
+	samples: Float32Array;
+} {
+	const buf = readFileSync(path);
+	if (buf.toString('ascii', 0, 4) !== 'RIFF') throw new Error('not a RIFF file');
+	if (buf.toString('ascii', 8, 12) !== 'WAVE') throw new Error('not a WAVE file');
+
+	let offset = 12;
+	let fmtOffset = -1;
+	let dataOffset = -1;
+	let dataSize = 0;
+	while (offset + 8 <= buf.length) {
+		const id = buf.toString('ascii', offset, offset + 4);
+		const size = buf.readUInt32LE(offset + 4);
+		if (id === 'fmt ') fmtOffset = offset + 8;
+		if (id === 'data') {
+			dataOffset = offset + 8;
+			dataSize = size;
+			break;
+		}
+		offset += 8 + size + (size & 1);
+	}
+	if (fmtOffset < 0 || dataOffset < 0) throw new Error('missing fmt or data chunk');
+
+	const audioFormat = buf.readUInt16LE(fmtOffset);
+	const channels = buf.readUInt16LE(fmtOffset + 2);
+	const sampleRate = buf.readUInt32LE(fmtOffset + 4);
+	const bitsPerSample = buf.readUInt16LE(fmtOffset + 14);
+	if (audioFormat !== 1) throw new Error(`expected PCM (1), got ${audioFormat}`);
+	if (channels !== 1) throw new Error(`expected mono, got ${channels} ch`);
+	if (bitsPerSample !== 16 && bitsPerSample !== 24) {
+		throw new Error(`expected 16- or 24-bit, got ${bitsPerSample}`);
+	}
+
+	const bytesPerSample = bitsPerSample / 8;
+	const remaining = buf.length - dataOffset;
+	const effectiveSize = dataSize > 0 && dataSize <= remaining ? dataSize : remaining;
+	const numSamples = Math.floor(effectiveSize / bytesPerSample);
+	const samples = new Float32Array(numSamples);
+
+	if (bitsPerSample === 16) {
+		for (let i = 0; i < numSamples; i++) {
+			samples[i] = buf.readInt16LE(dataOffset + i * 2) / 32768;
+		}
+	} else {
+		// 24-bit LE signed; sign-extend to 32 bits, scale to [-1, 1).
+		for (let i = 0; i < numSamples; i++) {
+			const o = dataOffset + i * 3;
+			let v = buf[o] | (buf[o + 1] << 8) | (buf[o + 2] << 16);
+			if (v & 0x800000) v |= ~0xffffff;
+			samples[i] = v / 8388608;
+		}
+	}
+
+	return { sampleRate, samples };
+}
+
 // Minimal mono 16-bit PCM WAV loader. Matches librosa/soundfile semantics
 // (int16 → float in [-1, 1) via /32768) so fixtures and JS see the same floats.
 export function loadWavMonoInt16(path: string): {
