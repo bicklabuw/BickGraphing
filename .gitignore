@@ -30,6 +30,7 @@ vite.config.ts.timestamp-*
 /Paper/
 output.png
 .claude/
+src/lib/components/original_spectrogram.svelte
 
 # Editor backups
 *~
