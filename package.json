@@ -13,7 +13,7 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint src",
 		"test": "vitest run",
-		"test:fixtures": "python tests/generate_440hz.py && python tests/librosa_stft.py && python tests/generate_extra_fixtures.py",
+		"test:fixtures": "python tests/librosa_stft.py && python tests/make_fixtures.py 1",
 		"commit": "npm run check && npm run format && npm run lint && npm run build && npm run preview -- --open",
 		"deploy": "cross-env GITHUB_PAGES=true npm run build && npx gh-pages -d build"
 	},
