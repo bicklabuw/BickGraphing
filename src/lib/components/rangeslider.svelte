@@ -5,7 +5,7 @@
   @author K. Seow <kseow@wisc.edu>
   @contributors Grace Steinmetz <gesparkles@gmail.com>
   @created 2025-05-30
-  @version 1.0.1
+  @version 0.2.0
   @license MIT
 -->
 <script lang="ts">
@@ -23,11 +23,7 @@
 	export let start = [10, 1000]; // default start range
 	/** Step granularity for handle movement. */
 	export let step = 0.0001;
-	/**
-	 * Display formatter passed straight to noUiSlider. `to` formats numbers
-	 * for display; `from` parses user input back into numbers. Override to
-	 * change precision or to add unit suffixes.
-	 */
+	/** noUiSlider formatter: `to` renders numbers, `from` parses input back to numbers. */
 	export let format = {
 		to: (value: number) => value.toFixed(5),
 		from: (value: string) => parseFloat(value)
@@ -52,10 +48,6 @@
 	const dispatch = createEventDispatcher();
 
 	let sliderEl: HTMLDivElement;
-
-	$: if (height !== undefined) {
-		console.log('Slider height updated:', height);
-	}
 
 	$: heightStyle =
 		height === undefined
@@ -95,7 +87,7 @@
 
 		slider.on('change', (sliderVals: (string | number)[]) => {
 			const numericVals = sliderVals.map((v) => (typeof v === 'string' ? format.from(v) : v));
-			dispatch('change', { sliderVals: numericVals });
+			dispatch('change', { values: numericVals });
 		});
 	});
 
@@ -131,26 +123,23 @@
 		}
 	}
 
+	let lastStart: [number, number] | null = null;
+
 	$: if (sliderEl && start) {
 		const sliderInstance = (sliderEl as any).noUiSlider;
-		if (sliderInstance) {
+		if (
+			sliderInstance &&
+			(!lastStart || lastStart[0] !== start[0] || lastStart[1] !== start[1])
+		) {
 			sliderInstance.set(start);
 			values = [start[0], start[1]];
 			minRangeStr = start[0].toString();
 			maxRangeStr = start[1].toString();
+			lastStart = [start[0], start[1]];
 		}
 	}
 
-	$: console.log('showInputs:', showInputs);
 </script>
-
-<!-- {#if title}
-	<h3
-		class="animate-fade-in mb-4 bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
-	>
-		{title}
-	</h3>
-{/if} -->
 
 {#if vertical}
 	<div class="flex h-full w-full flex-col items-center">
@@ -179,9 +168,6 @@
 			class="mx-auto mr-7 flex w-auto flex-col"
 			style="height: {typeof height === 'number' ? height + 'px' : height || '400px'}"
 		>
-			<!-- <div bind:this={sliderEl} class="flex-grow w-full min-h-[300px]"></div> -->
-			<!-- <div bind:this={sliderEl} class="flex-grow w-full h-full"></div> -->
-			<!-- <div bind:this={sliderEl} class="flex-grow w-full"></div> -->
 			<div bind:this={sliderEl} class="w-full" style={heightStyle}></div>
 		</div>
 
@@ -207,7 +193,6 @@
 		{/if}
 
 		<!-- Horizontal slider with text boxes on sides -->
-		<!-- class="w-24 rounded border border-gray-400 px-2 py-1 text-center text-xs flex-shrink-0" -->
 		<div class="flex w-full items-center gap-2">
 			{#if showInputs}
 				<input
@@ -235,3 +220,40 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	/* Vertical sliders only: move noUiSlider tick labels from the default right
+	   side to the LEFT (outer) side so they don't collide with the adjacent
+	   plot's y-axis labels. Horizontal sliders are untouched.
+
+	   Note: the slider has `direction: rtl`, so children inherit RTL static
+	   positioning. Each rule pins position via explicit `right:` to defeat
+	   that inheritance; padding-only tricks would land in the wrong spot. */
+
+	/* Pips container moves to the LEFT of the track. */
+	:global(.noUi-vertical .noUi-pips-vertical) {
+		left: auto;
+		right: 100%;
+	}
+	/* Tick markers: clear gap to the left of the bar (was overlapping at 3px). */
+	:global(.noUi-vertical .noUi-marker-vertical) {
+		left: auto;
+		right: 8px;
+	}
+	/* Labels: pinned 30px to the left of the bar; text right-aligned so it
+	   reads leftward (away from the bar). */
+	:global(.noUi-vertical .noUi-value-vertical) {
+		left: auto;
+		right: 30px;
+		padding-left: 0;
+		padding-right: 0;
+		text-align: right;
+	}
+	/* Vertical slider tooltips: flip from default LEFT side of the handle to
+	   the RIGHT side, so the start/end value tags sit between the slider and
+	   the plot (the parent flex layout has been widened to make room). */
+	:global(.noUi-vertical .noUi-tooltip) {
+		right: auto;
+		left: 120%;
+	}
+</style>
