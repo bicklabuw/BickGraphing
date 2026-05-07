@@ -5,14 +5,16 @@
   @author Alex Arovas <aarovas@wisc.edu>
   @contributors Grace Steinmetz <gesparkles@gmail.com>, K. Seow <kseow@wisc.edu>
   @created 2025-04-01
-  @version 1.0.1
+  @version 0.2.0
   @license MIT
 -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import * as d3 from 'd3';
+	// Skip our redraws while the spectrogram is busy. Same rationale as waveform.svelte.
+	import { spectrogramBusy } from '$lib/stores/uiBusy';
 
-	/** Pre-decoded `{time, amplitude}` series for the audio segment to render. The parent downsamples upstream so this component doesn't have to. */
+	/** Pre-decoded `{time, amplitude}` series — already downsampled by the parent. */
 	export let waveformData: { time: number; amplitude: number }[] = [];
 	/** Lower bound of the x-axis (time, in seconds). */
 	export let startTime = 0;
@@ -23,7 +25,7 @@
 	/** Upper bound of the y-axis (amplitude). */
 	export let maxAmp = 1;
 
-	/** Filename shown in the title strip; defaults to `'UNKNOWN'` when the parent forgets to pass it. */
+	/** Filename shown in the title strip. */
 	export let audioFileName: string = 'UNKNOWN';
 
 	let container: HTMLDivElement;
@@ -35,8 +37,9 @@
 			draw();
 		}
 
-		// Watch for resize
+		// Resize watcher. Skips while spectrogram is busy; reactive block below redraws once when flag clears.
 		observer = new ResizeObserver(() => {
+			if ($spectrogramBusy) return;
 			draw();
 		});
 		if (relative_parent) observer.observe(relative_parent);
@@ -46,11 +49,9 @@
 		if (observer && relative_parent) observer.unobserve(relative_parent);
 	});
 
-	// Redraw whenever incoming data or rendering params change.
-	// Without this, the component only renders on mount or container resize —
-	// so if waveformData arrives after mount (the common case), the canvas
-	// stays empty until something forces a layout reflow.
-	$: if (container && waveformData.length > 0) {
+	// Redraw on data/param changes. $spectrogramBusy is a dep so this re-fires when the
+	// flag clears, driving the settle-redraw at the end of a spectrogram run.
+	$: if (container && waveformData.length > 0 && !$spectrogramBusy) {
 		startTime;
 		endTime;
 		minAmp;
@@ -59,17 +60,13 @@
 	}
 
 	function draw() {
-		console.log('Container:', container);
 		container.classList.remove('absolute', 'bottom-2');
 		d3.select(container).html('');
 		const margin = { top: 4, right: 4, bottom: 16, left: 14 };
 		const maxRect = container.getBoundingClientRect();
-		console.log('Max Rect:', maxRect);
 		const aspectRatio = 21 / 9; // 21:9 aspect ratio
 		const height = maxRect.width / aspectRatio;
 		const width = maxRect.width;
-
-		console.log(`Creating mini waveform with dimensions: ${width}x${height}`);
 
 		const innerWidth = width - margin.left - margin.right;
 		const innerHeight = height - margin.top - margin.bottom;

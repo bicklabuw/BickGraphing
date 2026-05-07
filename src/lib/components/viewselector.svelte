@@ -5,23 +5,23 @@
   @author Grace Steinmetz <gesparkles@gmail.com>
   @contributors K. Seow <kseow@wisc.edu>
   @created 2025-05-30
-  @version 1.0.1
+  @version 0.2.0
   @license MIT
 -->
 <script lang="ts">
-	/** Set to false to grey out and disable the spectrogram checkbox — used as a kill-switch when FFmpeg isn't ready or spectrogram support is intentionally off. */
+	/** Kill-switch for the spectrogram checkbox (greyed and disabled when false). */
 	export let spectrogramOnline: boolean = true;
-	/** Whether the waveform checkbox is currently checked. */
+	/** Whether the waveform checkbox is checked. */
 	export let showWaveform: boolean;
-	/** Whether the spectrogram checkbox is currently checked. */
+	/** Whether the spectrogram checkbox is checked. */
 	export let showSpectrogram: boolean;
-	/** Called whenever either checkbox toggles, with the new `(waveform, spectrogram)` pair so the parent can act on both flags atomically. */
+	/** Called on either toggle with the new `(waveform, spectrogram)` pair. */
 	export let onChange: (waveform: boolean, spectrogram: boolean) => void;
 </script>
 
 <div class="mt-6">
 	<h3
-		class="animate-fade-in mb-1 bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
+		class="animate-fade-in bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
 	>
 		Select Visualization Type
 	</h3>

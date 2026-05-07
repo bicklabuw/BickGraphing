@@ -5,30 +5,41 @@
   @author Grace Steinmetz <gesparkles@gmail.com>
   @contributors K. Seow <kseow@wisc.edu>
   @created 2025-05-30
-  @version 1.0.1
+  @version 0.2.0
   @license MIT
 -->
 <script lang="ts">
 	import { dndzone } from 'svelte-dnd-action';
 	import { asset } from '$app/paths';
+	import { isLongDuration } from '$lib/utils/wavHeader';
 
-	/** Ordered list of files currently chosen by the user; each entry has a stable id (used as the dnd key) and the original filename. */
+	/** Ordered list of selected files. `id` is the dnd key; `name` is the filename. */
 	export let selectedFiles: { id: string; name: string }[] = [];
-	/** Lookup of `filename → duration in seconds`, populated as files are decoded. Used to display audio length next to each row. */
+	/** Lookup of `filename → duration in seconds`, used for the row's length display. */
 	export let audioDurationMap: Record<string, number> = {};
-	/** Callback fired when the user clicks the remove button on a row. Receives the filename so the parent can purge it from all per-file maps. */
+	/** Called when the user clicks Remove on a row. */
 	export let removeFile: (name: string) => void;
-	/** Handler for both `consider` and `finalize` events from svelte-dnd-action — receives the reordered items in `event.detail.items`. */
+	/** Called when the user clicks "Remove all" in the header. */
+	export let removeAllFiles: () => void;
+	/** Handles `consider` and `finalize` from svelte-dnd-action; reordered items in `event.detail.items`. */
 	export let handleReorder: (event: CustomEvent) => void;
 </script>
 
 {#if selectedFiles.length > 0}
 	<div class="mt-6">
-		<h3
-			class="animate-fade-in bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
-		>
-			Selected Files
-		</h3>
+		<div class="mb-2 flex items-center justify-between">
+			<h3
+				class="animate-fade-in bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
+			>
+				Selected File{selectedFiles.length === 1 ? '' : 's'}
+			</h3>
+			<button
+				class="rounded-md border border-red-500 bg-red-50 px-3 py-1 text-xs font-medium text-red-700 transition hover:bg-red-100"
+				on:click={removeAllFiles}
+			>
+				Remove all
+			</button>
+		</div>
 
 		<ul
 			use:dndzone={{
@@ -53,6 +64,14 @@
 					</div>
 
 					<div class="flex flex-shrink-0 items-center gap-2">
+						{#if isLongDuration(audioDurationMap[file.name])}
+							<span
+								class="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800"
+								title="Files longer than 1 hour take noticeably longer to process."
+							>
+								Long file
+							</span>
+						{/if}
 						<span class="text-xs tabular-nums text-gray-500">
 							{audioDurationMap[file.name]?.toFixed(2) ?? '--'}s
 						</span>
