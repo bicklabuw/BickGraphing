@@ -5,7 +5,7 @@
   @author K. Seow <kseow@wisc.edu>
   @contributors Grace Steinmetz <gesparkles@gmail.com>
   @created 2025-04-01
-  @version 1.0.1
+  @version 0.2.0
   @license MIT
 -->
 <script lang="ts">
