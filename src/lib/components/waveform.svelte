@@ -2,15 +2,17 @@
   @component
   Description: Full-width D3 waveform renderer with scroll handling and download-as-SVG support.
 
-  @author Alex Arovas <aarovas@wisc.edu>
-  @contributors K. Seow <kseow@wisc.edu>, Grace Steinmetz <gesparkles@gmail.com>
+  @author K. Seow <kseow@wisc.edu>
+  @contributors Alex Arovas <aarovas@wisc.edu>, Grace Steinmetz <gesparkles@gmail.com>
   @created 2025-04-01
-  @version 1.0.1
+  @version 0.2.0
   @license MIT
 -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import * as d3 from 'd3';
+	// Skip our redraws while the spectrogram is busy — avoids ~6× redundant D3 work.
+	import { spectrogramBusy } from '$lib/stores/uiBusy';
 
 	/** Pre-decoded `{time, amplitude}` series for the audio segment to render. */
 	export let waveformData: { time: number; amplitude: number }[] = [];
@@ -23,107 +25,135 @@
 	/** Upper bound of the y-axis (amplitude). */
 	export let maxAmp = 1;
 
-	/** Initial vertical scroll offset within the rendered SVG. */
-	export let scrollY: number = 0;
-
 	/** Filename used as the SVG title and as the basename for `Download .svg`. */
 	export let audioFileName: string = 'waveform';
 
-	/** Two-way bindable: the rendered SVG's measured height in pixels. The parent reads this with `bind:computedHeight={...}` to keep the adjacent vertical amplitude slider the same height as the waveform. */
+	/** Two-way bindable: rendered SVG height in px. Parent uses it to size the adjacent amplitude slider. */
 	export let computedHeight: number = 400;
+	/** When true, swaps the SVG for a progress bar at the same aspect ratio. */
+	export let loading: boolean = false;
+	/** Audio duration in seconds; heuristic for the loading bar (decodeAudioData has no real progress). */
+	export let audioDurationSec: number = 0;
 	let container: HTMLDivElement;
+
+	let elapsedMs = 0;
+	let progressInterval: ReturnType<typeof setInterval> | undefined;
+	let loadingStartTs = 0;
+
+	$: expectedMs = Math.max(500, Math.min(60000, audioDurationSec * 3));
+	$: progressPercent = Math.min(95, Math.round((elapsedMs / expectedMs) * 100));
+
+	$: {
+		if (loading) {
+			if (!progressInterval) {
+				loadingStartTs = performance.now();
+				elapsedMs = 0;
+				progressInterval = setInterval(() => {
+					elapsedMs = performance.now() - loadingStartTs;
+				}, 100);
+			}
+		} else {
+			if (progressInterval) {
+				clearInterval(progressInterval);
+				progressInterval = undefined;
+			}
+			elapsedMs = 0;
+		}
+	}
 	let observer: ResizeObserver | undefined;
 
-	let initialScroll = false; // Flag to handle initial scroll position
-
 	/**
-	 * Serializes the rendered SVG to a file and triggers a browser download.
-	 *
-	 * Exposed so the parent can wire up a "Download .svg" button via
-	 * `bind:this`. The clone is patched with a white background rectangle
-	 * before serialization so the saved file looks correct outside the
-	 * page's dark surrounding chrome.
+	 * Serializes the SVG and triggers a download in the chosen format. Exposed via
+	 * `bind:this` for the parent's Download dropdown. Patches a white background onto
+	 * the clone so it renders correctly outside the page's dark chrome.
 	 */
-	export function downloadWaveform() {
+	export function downloadWaveform(format: 'svg' | 'png' | 'jpeg' = 'svg') {
 		if (!container) return;
 
 		const svgEl = container.querySelector('svg');
 		if (!svgEl) return;
 
-		// Clone SVG to avoid modifying the live DOM
+		// Clone SVG and pin explicit pixel dimensions so the raster path can render it.
+		const rect = svgEl.getBoundingClientRect();
+		const width = Math.round(rect.width);
+		const height = Math.round(rect.height);
+
 		const clone = svgEl.cloneNode(true) as SVGSVGElement;
+		clone.setAttribute('width', String(width));
+		clone.setAttribute('height', String(height));
 
 		// Add white background
-		const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-		rect.setAttribute('width', '100%');
-		rect.setAttribute('height', '100%');
-		rect.setAttribute('fill', 'white');
-		clone.insertBefore(rect, clone.firstChild);
+		const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+		bg.setAttribute('width', '100%');
+		bg.setAttribute('height', '100%');
+		bg.setAttribute('fill', 'white');
+		clone.insertBefore(bg, clone.firstChild);
 
-		// Serialize SVG
-		const serializer = new XMLSerializer();
-		const source = serializer.serializeToString(clone);
-		const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+		const cleanName = audioFileName.replace(/\.wav$/i, '');
+		const baseName = `${cleanName}_waveform_t${startTime.toFixed(1)}-${endTime.toFixed(1)}s`;
+		const source = new XMLSerializer().serializeToString(clone);
 
-		// Generate filename
-		const filename = `${audioFileName.replace(/\./g, '_')}_waveform_${Math.floor(startTime)}_${Math.floor(endTime)}.svg`;
+		if (format === 'svg') {
+			const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+			triggerDownload(URL.createObjectURL(blob), `${baseName}.svg`);
+			return;
+		}
 
-		// Trigger download
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = filename;
-		a.click();
-		URL.revokeObjectURL(url);
+		// Raster path: SVG → Image → 2× canvas → PNG/JPEG blob.
+		const scale = 2;
+		const svgUrl = URL.createObjectURL(
+			new Blob([source], { type: 'image/svg+xml;charset=utf-8' })
+		);
+		const img = new Image();
+		img.onload = () => {
+			const canvas = document.createElement('canvas');
+			canvas.width = width * scale;
+			canvas.height = height * scale;
+			const ctx = canvas.getContext('2d');
+			if (!ctx) return;
+			ctx.scale(scale, scale);
+			ctx.drawImage(img, 0, 0, width, height);
+			URL.revokeObjectURL(svgUrl);
+
+			const mime = format === 'png' ? 'image/png' : 'image/jpeg';
+			const ext = format === 'png' ? 'png' : 'jpg';
+			canvas.toBlob(
+				(blob) => {
+					if (!blob) return;
+					triggerDownload(URL.createObjectURL(blob), `${baseName}.${ext}`);
+				},
+				mime,
+				format === 'jpeg' ? 0.95 : undefined
+			);
+		};
+		img.src = svgUrl;
 	}
 
-	function handleScroll(/*event: Event*/) {
-		if (window.scrollY === scrollY) {
-			initialScroll = false; // No need to update on initial scroll
-			window.removeEventListener('scroll', handleScroll);
-		} else if (initialScroll) {
-			requestAnimationFrame(() => {
-				// console.log('Scroll position attempt after processing:', scrollY);
-				window.scrollTo({ top: scrollY, behavior: 'instant' });
-			});
-		}
-		// scrollY = window.scrollY;
-		// console.log('Scroll position updated:', window.scrollY);
-		// console.trace(); // show call stack that triggered it
-		// console.log('Scroll Event:', event);
+	function triggerDownload(href: string, filename: string) {
+		const a = document.createElement('a');
+		a.href = href;
+		a.download = filename;
+		a.click();
+		URL.revokeObjectURL(href);
 	}
 
 	onMount(() => {
-		window.addEventListener('scroll', handleScroll, { passive: true });
 		if (waveformData.length > 0) {
-			// console.log(`Scroll position before processing: ${scrollY}`);
-			// console.log('Current Scroll Position:', window.scrollY);
-
 			createWaveform();
-
-			initialScroll = true; // Reset flag after initial render
-
-			// await tick(); // Ensure DOM updates are applied before scrolling
-			// await tick();
-
-			// console.log('Scroll position after processing:', scrollY);
 		}
 
-		// Watch for resize
+		// Resize watcher. Skips while spectrogram is busy; the reactive block below re-fires
+		// when the flag clears and redraws once with the final size.
 		observer = new ResizeObserver(() => {
+			if ($spectrogramBusy) return;
 			createWaveform();
 		});
 		if (container) observer.observe(container);
-		return () => {
-			if (initialScroll) window.removeEventListener('scroll', handleScroll);
-		};
 	});
 
-	// Redraw whenever incoming data or rendering params change.
-	// Without this, the component only renders on mount or container resize —
-	// so if waveformData arrives after mount (the common case), the canvas
-	// stays empty until something forces a layout reflow.
-	$: if (container && waveformData.length > 0) {
+	// Redraw on data/param changes. $spectrogramBusy is listed as a dep so this re-fires
+	// when the flag clears, driving the settle-redraw at the end of a spectrogram run.
+	$: if (container && waveformData.length > 0 && !$spectrogramBusy) {
 		startTime;
 		endTime;
 		minAmp;
@@ -133,29 +163,18 @@
 
 	onDestroy(() => {
 		if (observer && container) observer.unobserve(container);
+		if (progressInterval) clearInterval(progressInterval);
 	});
 
 	function createWaveform() {
 		d3.select(container).html('');
 
-		console.log('minAmp:', minAmp);
-		console.log('maxAmp:', maxAmp);
-		console.log('Start Time:', startTime);
-		console.log('End Time:', endTime);
-		console.log('Waveform Data Length:', waveformData.length);
-
-		console.log('Container:', container);
-
-		const margin = { top: 30, right: 40, bottom: 30, left: 80 };
+		const margin = { top: 20, right: 40, bottom: 24, left: 58 };
 		const maxRect = container.getBoundingClientRect();
-		console.log('Max Rect:', maxRect);
 		const aspectRatio = 21 / 9; // 16:9 aspect ratio
 		const height = maxRect.width / aspectRatio;
 		const width = maxRect.width;
 		computedHeight = Math.round(height);
-		console.log('Waveform height computed:', computedHeight);
-
-		console.log(`Creating waveform with dimensions: ${width}x${height}`);
 
 		const innerWidth = width - margin.left - margin.right;
 		const innerHeight = height - margin.top - margin.bottom;
@@ -204,17 +223,33 @@
 					.axisBottom(x)
 					.ticks(10)
 					.tickFormat((d) => Number(d).toFixed(1))
-			);
+			)
+			.append('text')
+			.attr('x', innerWidth / 2)
+			.attr('y', 22)
+			.attr('fill', '#000')
+			.attr('font-size', '10px')
+			.style('text-anchor', 'middle')
+			.text('Time (s)');
 
-		g.append('g').call(d3.axisLeft(y).ticks(5));
+		g.append('g')
+			.call(d3.axisLeft(y).ticks(5))
+			.append('text')
+			.attr('transform', 'rotate(-90)')
+			.attr('x', -innerHeight / 2)
+			.attr('y', -32)
+			.attr('fill', '#000')
+			.attr('font-size', '10px')
+			.style('text-anchor', 'middle')
+			.text('Amplitude');
 
 		g.append('text')
 			.attr('x', innerWidth / 2)
-			.attr('y', -10)
+			.attr('y', -5)
 			.attr('text-anchor', 'middle')
 			.attr('font-size', '14px')
 			.attr('font-weight', 'bold')
-			.text(`Waveform (${startTime.toFixed(1)}s - ${endTime.toFixed(1)}s)`);
+			.text(`${audioFileName.replace(/\.wav$/i, '')}: Waveform`);
 
 		const waveformGroup = g.append('g').attr('clip-path', 'url(#clipWaveform)');
 
@@ -228,4 +263,22 @@
 	}
 </script>
 
-<div bind:this={container} class="waveform"></div>
+{#if loading}
+	<div
+		class="flex w-full items-center justify-center rounded-lg bg-gray-50"
+		style="aspect-ratio: 21 / 9;"
+	>
+		<div class="w-3/4">
+			<p class="mb-2 text-center text-sm font-medium text-gray-700">Generating waveform...</p>
+			<div class="h-3 w-full overflow-hidden rounded-full bg-gray-200">
+				<div
+					class="h-full rounded-full bg-blue-600 transition-all duration-200"
+					style="width: {progressPercent}%"
+				></div>
+			</div>
+			<p class="mt-1 text-center text-xs text-gray-500">{progressPercent}% complete</p>
+		</div>
+	</div>
+{:else}
+	<div bind:this={container} class="waveform"></div>
+{/if}
