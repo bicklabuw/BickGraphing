@@ -5,25 +5,27 @@
   @author Grace Steinmetz <gesparkles@gmail.com>
   @contributors K. Seow <kseow@wisc.edu>
   @created 2025-05-30
-  @version 1.0.1
+  @version 0.2.0
   @license MIT
 -->
 <script lang="ts">
-	/** Heading rendered above the input pair (e.g. "Time Range"). */
+	/** Heading above the input pair (e.g. "Time Range"). */
 	export let label: string;
-	/** Optional unit string shown alongside the label (e.g. "(seconds)", "(Hz)"). */
+	/** Optional one-line description shown under the heading. */
+	export let description: string = '';
+	/** Unit string shown alongside the label (e.g. "(seconds)"). */
 	export let unit: string = '';
 	/** Caption above the min input. */
 	export let minLabel: string = 'Min';
 	/** Caption above the max input. */
 	export let maxLabel: string = 'Max';
-	/** Current minimum value. Treated as the source of truth — the local string is re-synced from this on every parent update. */
+	/** Current minimum value (source of truth — local string re-syncs on parent update). */
 	export let minValue: number;
 	/** Current maximum value. */
 	export let maxValue: number;
-	/** Step granularity passed to the underlying `<input type="number">`. */
+	/** Step granularity for `<input type="number">`. */
 	export let step: number = 0.00001;
-	/** Called whenever either input commits a new valid number. Always receives the full `(min, max)` pair so the parent can update both at once. */
+	/** Called on commit of a valid number; always receives the full `(min, max)` pair. */
 	export let onChange: (min: number, max: number) => void;
 
 	let localMin: string = minValue.toString(); // Local string for editing
@@ -51,11 +53,16 @@
 </script>
 
 <div class="mt-4 space-y-2">
-	<p
-		class="animate-fade-in bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
-	>
-		{label}
-	</p>
+	<div>
+		<p
+			class="animate-fade-in bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
+		>
+			{label}
+		</p>
+		{#if description}
+			<p class="text-sm text-gray-500">{description}</p>
+		{/if}
+	</div>
 
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 		<!-- Min input (safe text-based editing) -->
