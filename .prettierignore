@@ -1,7 +1,11 @@
-# Package Managers
+# Package managers
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
 
+# Binary / vendored / generated
 tests/fixtures/
 static/ffmpeg-core/
+.svelte-kit/
+build/
+coverage/

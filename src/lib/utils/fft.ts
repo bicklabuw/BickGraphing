@@ -2,11 +2,11 @@
  * In-place Cooley–Tukey radix-2 FFT.
  *
  * Computes the magnitude spectrum |X[k]| of a real-valued signal whose
- * length N is a power of 2. Only the first N/2 bins are returned — the
- * upper half is the complex conjugate of the lower half for real input.
+ * length N is a power of 2. Returns the lower half plus Nyquist
+ * (N/2 + 1 bins); the upper half is the complex conjugate mirror.
  *
  * @param input - Real-valued signal samples; length must be a power of 2.
- * @returns Magnitude spectrum of length N/2.
+ * @returns Magnitude spectrum of length N/2 + 1.
  * @throws Error if `input.length` is not a power of 2.
  */
 export function fft(input: number[]) {
@@ -55,8 +55,8 @@ export function fft(input: number[]) {
 		}
 	}
 
-	const magnitude = new Float32Array(N / 2);
-	for (let i = 0; i < N / 2; i++) {
+	const magnitude = new Float32Array(N / 2 + 1);
+	for (let i = 0; i <= N / 2; i++) {
 		magnitude[i] = Math.sqrt(real[i] * real[i] + imag[i] * imag[i]);
 	}
 	return magnitude;
@@ -66,11 +66,11 @@ export function fft(input: number[]) {
  * Splits a sample stream into overlapping frames for STFT analysis.
  *
  * @param samples - Input audio samples.
- * @param windowSize - Frame length in samples (default 1024).
- * @param hopSize - Step between successive frames in samples (default 512, i.e. 50% overlap).
+ * @param windowSize - Frame length in samples (default 2048, matches production STFT).
+ * @param hopSize - Step between successive frames in samples (default 1024, i.e. 50% overlap).
  * @returns Array of frame views over `samples`.
  */
-export function createWindows(samples: Float32Array, windowSize = 1024, hopSize = 512) {
+export function createWindows(samples: Float32Array, windowSize = 2048, hopSize = 1024) {
 	const windows = [];
 	for (let i = 0; i + windowSize <= samples.length; i += hopSize) {
 		windows.push(samples.slice(i, i + windowSize));
