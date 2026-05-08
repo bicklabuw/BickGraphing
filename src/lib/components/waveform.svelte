@@ -101,9 +101,7 @@
 
 		// Raster path: SVG → Image → 2× canvas → PNG/JPEG blob.
 		const scale = 2;
-		const svgUrl = URL.createObjectURL(
-			new Blob([source], { type: 'image/svg+xml;charset=utf-8' })
-		);
+		const svgUrl = URL.createObjectURL(new Blob([source], { type: 'image/svg+xml;charset=utf-8' }));
 		const img = new Image();
 		img.onload = () => {
 			const canvas = document.createElement('canvas');
@@ -153,11 +151,8 @@
 
 	// Redraw on data/param changes. $spectrogramBusy is listed as a dep so this re-fires
 	// when the flag clears, driving the settle-redraw at the end of a spectrogram run.
-	$: if (container && waveformData.length > 0 && !$spectrogramBusy) {
-		startTime;
-		endTime;
-		minAmp;
-		maxAmp;
+	$: deps = [startTime, endTime, minAmp, maxAmp];
+	$: if (deps && container && waveformData.length > 0 && !$spectrogramBusy) {
 		createWaveform();
 	}
 

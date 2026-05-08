@@ -7,12 +7,12 @@ import {
 	loadWavMonoInt16,
 	loadFixture,
 	compareToLibrosa,
-	StftFixture,
 	SAMPLE_RATE,
 	N_FFT,
 	HOP_LENGTH,
 	FIXTURE_DIR
 } from './helpers';
+import type { StftFixture } from './helpers';
 
 // Characterization tests: bin-for-bin agreement with librosa's STFT on three
 // signal classes that span what the app actually processes.
@@ -33,12 +33,7 @@ describe('librosa parity — 440 Hz sine (stationary)', () => {
 		expect(fixture.hop_length).toBe(HOP_LENGTH);
 
 		// Quantization noise from the int16 wav is ~1/32768 — well below 1%.
-		const samples = generateSine(
-			fixture.frequency_hz,
-			1.0,
-			fixture.sample_rate,
-			fixture.amplitude
-		);
+		const samples = generateSine(fixture.frequency_hz, 1.0, fixture.sample_rate, fixture.amplitude);
 		compareToLibrosa(stft(samples), fixture);
 	});
 });
