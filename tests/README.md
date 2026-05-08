@@ -16,6 +16,11 @@ The suite covers three pieces of the audio pipeline:
   to estimate duration before deciding whether to warn the user about a
   long file. Lives in `src/lib/utils/wavHeader.ts`.
 
+For a visual reference of what the app produces for a hand-picked
+subset of these fixtures, see [`outputs/README.md`](outputs/README.md).
+Use it to compare what you're seeing in the app against known-good
+waveforms and spectrograms.
+
 ## Glossary
 
 Terms used throughout this README:

@@ -69,6 +69,8 @@ After loading the included `test.wav` file, you should see:
 
 If your output matches the screenshots above, the software is operating correctly.
 
+For a side-by-side reference of additional example fixtures (pure tone, sweep, siren, musical scale, layered harmonics), see [`tests/outputs/README.md`](tests/outputs/README.md). Use it to compare what you're seeing in the app against known-good outputs.
+
 ## Architecture (4 Layers)
 
 ```
