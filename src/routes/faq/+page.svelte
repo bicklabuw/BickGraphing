@@ -67,7 +67,9 @@
 		return { slope, intercept };
 	}
 
-	$: mainFit = calibration ? fitLinear(calibration.points.map((p) => [p.lengthSec, p.mainMs])) : null;
+	$: mainFit = calibration
+		? fitLinear(calibration.points.map((p) => [p.lengthSec, p.mainMs]))
+		: null;
 	$: workerFit = calibration
 		? fitLinear(calibration.points.map((p) => [p.lengthSec, p.workerMs]))
 		: null;
@@ -143,8 +145,8 @@
 				</h2>
 				<div class="space-y-3 text-sm text-gray-600">
 					<p>
-						<strong>Waveform rendering is near-instant</strong> — it's a simple plot of amplitude
-						over time, computed in milliseconds regardless of file length.
+						<strong>Waveform rendering is near-instant</strong> — it's a simple plot of amplitude over
+						time, computed in milliseconds regardless of file length.
 					</p>
 					<p>
 						<strong>Spectrogram generation takes longer</strong>, and the time depends almost
@@ -160,27 +162,36 @@
 					{#if calibration}
 						<p>Translated to file lengths, that gives roughly:</p>
 						<ul class="ml-4 list-disc space-y-0.5">
-							<li>10-second clip: <span class="tabular-nums">~{formatMs(predictedMs(10))}</span></li>
+							<li>
+								10-second clip: <span class="tabular-nums">~{formatMs(predictedMs(10))}</span>
+							</li>
 							<li>1-minute file: <span class="tabular-nums">~{formatMs(predictedMs(60))}</span></li>
-							<li>5-minute file: <span class="tabular-nums">~{formatMs(predictedMs(300))}</span></li>
-							<li>15-minute file: <span class="tabular-nums">~{formatMs(predictedMs(900))}</span></li>
-							<li>30-minute file: <span class="tabular-nums">~{formatMs(predictedMs(1800))}</span></li>
-							<li>45-minute file: <span class="tabular-nums">~{formatMs(predictedMs(2700))}</span></li>
+							<li>
+								5-minute file: <span class="tabular-nums">~{formatMs(predictedMs(300))}</span>
+							</li>
+							<li>
+								15-minute file: <span class="tabular-nums">~{formatMs(predictedMs(900))}</span>
+							</li>
+							<li>
+								30-minute file: <span class="tabular-nums">~{formatMs(predictedMs(1800))}</span>
+							</li>
+							<li>
+								45-minute file: <span class="tabular-nums">~{formatMs(predictedMs(2700))}</span>
+							</li>
 						</ul>
 					{:else}
 						<p class="italic text-gray-500">
 							Want estimates calibrated to your machine? Run a sweep on the
-							<a
-								href="{base}/benchmark"
-								class="text-purple-600 underline hover:text-purple-800"
-							>
+							<a href="{base}/benchmark" class="text-purple-600 underline hover:text-purple-800">
 								benchmark page
 							</a>
 							and these numbers will fill in automatically.
 						</p>
 					{/if}
 
-					<details class="group rounded-lg border border-purple-200 bg-purple-50 p-3 open:bg-purple-100">
+					<details
+						class="group rounded-lg border border-purple-200 bg-purple-50 p-3 open:bg-purple-100"
+					>
 						<summary
 							class="cursor-pointer list-none text-xs font-semibold text-purple-700 marker:hidden"
 						>
@@ -197,7 +208,8 @@
 									class="text-purple-600 underline hover:text-purple-800"
 								>
 									<em>Short-Time Fourier Transform</em>
-								</a> (STFT): the audio is split into overlapping windows ({FFT_SIZE} samples wide,
+								</a>
+								(STFT): the audio is split into overlapping windows ({FFT_SIZE} samples wide,
 								{HOP_SIZE} samples between windows = 50% overlap), each window is multiplied by a
 								<a
 									href="https://en.wikipedia.org/wiki/Hann_function"
@@ -237,8 +249,8 @@
 								>
 									web workers
 								</a>
-								running in parallel — each worker computes its slice of frames, then converts
-								magnitudes to log10 in-place before sending the buffer back via a
+								running in parallel — each worker computes its slice of frames, then converts magnitudes
+								to log10 in-place before sending the buffer back via a
 								<a
 									href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects"
 									target="_blank"
@@ -276,9 +288,9 @@
 									class="text-purple-600 underline hover:text-purple-800"
 								>
 									FFmpeg.wasm
-								</a> extraction (~25 s for a 30-min file). Render is a single <code
-									>putImageData</code
-								> call into a canvas using a 256-entry
+								</a>
+								extraction (~25 s for a 30-min file). Render is a single <code>putImageData</code>
+								call into a canvas using a 256-entry
 								<a
 									href="https://research.google/blog/turbo-an-improved-rainbow-colormap-for-visualization/"
 									target="_blank"
@@ -301,10 +313,7 @@
 									least-squares linear fit
 								</a>
 								of your last
-								<a
-									href="{base}/benchmark"
-									class="text-purple-600 underline hover:text-purple-800"
-								>
+								<a href="{base}/benchmark" class="text-purple-600 underline hover:text-purple-800">
 									benchmark sweep
 								</a>'s (lengthSec, workerMs) data points.
 							</p>

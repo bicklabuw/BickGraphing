@@ -17,7 +17,8 @@
 	const howtoSteps = [
 		{
 			title: 'Drag & Drop Your Audio',
-			description: 'Drop one or more .wav files into the tool. Everything runs locally — no files are uploaded.'
+			description:
+				'Drop one or more .wav files into the tool. Everything runs locally — no files are uploaded.'
 		},
 		{
 			title: 'Choose Your Visualization',
@@ -25,7 +26,8 @@
 		},
 		{
 			title: 'Adjust Your Settings',
-			description: 'Toggle Sliders to fine-tune amplitude and time. Toggle Details to see metadata. Download as SVG when ready.'
+			description:
+				'Toggle Sliders to fine-tune amplitude and time. Toggle Details to see metadata. Download as SVG when ready.'
 		}
 	];
 </script>
@@ -51,7 +53,7 @@
 <div class="group fixed bottom-4 right-4 z-50">
 	<!-- Hover popup with the instructions -->
 	<div
-		class="pointer-events-none absolute bottom-full right-0 mb-3 w-80 origin-bottom-right scale-95 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100"
+		class="pointer-events-none absolute bottom-full right-0 mb-3 w-80 origin-bottom-right scale-95 opacity-0 transition-all duration-200 group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100"
 	>
 		<div class="rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-gray-200">
 			<h3 class="mb-3 text-base font-bold text-gray-800">Graphing Instructions</h3>

@@ -32,7 +32,7 @@
 	export let computedHeight: number = 400;
 
 	let container: HTMLDivElement;
-	let status = 'Waiting...';
+	let _status = 'Waiting...';
 
 	// Cached so resize can repaint without re-running ffmpeg + STFT.
 	let logMagCache: number[][] | null = null;
@@ -273,7 +273,7 @@
 		phase = 'decode';
 		progressPct = 0;
 		try {
-			status = 'Extracting audio...';
+			_status = 'Extracting audio...';
 			console.log(`[Spectrogram] Processing ${inputFileName}`);
 			console.time('[spec-test] total');
 
@@ -353,13 +353,13 @@
 
 			progressPct = 92;
 
-			status = 'Rendering...';
+			_status = 'Rendering...';
 			console.time('[spec-test] canvas render');
 			drawSpectrogram(logMag, sampleRate);
 			console.timeEnd('[spec-test] canvas render');
 			console.timeEnd('[spec-test] total');
 			progressPct = 100;
-			status = 'Done.';
+			_status = 'Done.';
 			phase = 'done';
 		} catch (err) {
 			if (signal.aborted || (err as Error)?.name === 'AbortError') {
@@ -367,7 +367,7 @@
 				return;
 			}
 			console.error('[Spectrogram] Failed:', err);
-			status = 'Error.';
+			_status = 'Error.';
 			phase = 'idle';
 		} finally {
 			if (currentController === myController) {
@@ -405,9 +405,7 @@
 		const halfSize = fftSize >> 1;
 		const numWorkers = Math.max(1, Math.min(navigator.hardwareConcurrency || 4, expectedFrames));
 		const framesPerWorker = Math.ceil(expectedFrames / numWorkers);
-		console.log(
-			`[spec-test] dispatching ${expectedFrames} frames across ${numWorkers} workers`
-		);
+		console.log(`[spec-test] dispatching ${expectedFrames} frames across ${numWorkers} workers`);
 
 		type WorkerChunk = { frameStart: number; frameCount: number; magnitudes: Float32Array };
 		const tasks: Promise<WorkerChunk>[] = [];
@@ -720,7 +718,8 @@
 				>
 					{#if phase === 'done'}
 						<div class="flex items-center gap-2 font-medium text-green-700">
-							<span aria-hidden="true" class="inline-block h-2 w-2 rounded-full bg-green-500"></span>
+							<span aria-hidden="true" class="inline-block h-2 w-2 rounded-full bg-green-500"
+							></span>
 							<span>Spectrogram Ready</span>
 						</div>
 					{:else}
