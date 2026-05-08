@@ -2,3 +2,8 @@
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
+
+# Test fixtures — binary WAVs and LFS-pointer JSONs. Prettier chokes on
+# multi-GB WAV files ("Invalid string length") and shouldn't reformat
+# librosa-generated reference JSON anyway.
+tests/fixtures/

@@ -101,9 +101,7 @@
 
 		// Raster path: SVG → Image → 2× canvas → PNG/JPEG blob.
 		const scale = 2;
-		const svgUrl = URL.createObjectURL(
-			new Blob([source], { type: 'image/svg+xml;charset=utf-8' })
-		);
+		const svgUrl = URL.createObjectURL(new Blob([source], { type: 'image/svg+xml;charset=utf-8' }));
 		const img = new Image();
 		img.onload = () => {
 			const canvas = document.createElement('canvas');

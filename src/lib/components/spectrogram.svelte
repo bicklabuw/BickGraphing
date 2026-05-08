@@ -405,9 +405,7 @@
 		const halfSize = fftSize >> 1;
 		const numWorkers = Math.max(1, Math.min(navigator.hardwareConcurrency || 4, expectedFrames));
 		const framesPerWorker = Math.ceil(expectedFrames / numWorkers);
-		console.log(
-			`[spec-test] dispatching ${expectedFrames} frames across ${numWorkers} workers`
-		);
+		console.log(`[spec-test] dispatching ${expectedFrames} frames across ${numWorkers} workers`);
 
 		type WorkerChunk = { frameStart: number; frameCount: number; magnitudes: Float32Array };
 		const tasks: Promise<WorkerChunk>[] = [];
@@ -720,7 +718,8 @@
 				>
 					{#if phase === 'done'}
 						<div class="flex items-center gap-2 font-medium text-green-700">
-							<span aria-hidden="true" class="inline-block h-2 w-2 rounded-full bg-green-500"></span>
+							<span aria-hidden="true" class="inline-block h-2 w-2 rounded-full bg-green-500"
+							></span>
 							<span>Spectrogram Ready</span>
 						</div>
 					{:else}

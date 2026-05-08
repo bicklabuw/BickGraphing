@@ -86,14 +86,14 @@ If your output matches the screenshots above, the software is operating correctl
 
 ## Tech Stack
 
-| Layer     | Tech                                       |
-| --------- | ------------------------------------------ |
-| Framework | SvelteKit 2.16+, TypeScript, Vite          |
-| Audio     | FFmpeg.wasm, Web Audio API                 |
-| Viz       | D3.js (scales), Canvas2D                   |
-| Styling   | TailwindCSS 3.4, PostCSS, autoprefixer     |
-| Controls  | noUiSlider, svelte-dnd-action              |
-| Testing   | Vitest, librosa (Python, fixture parity)   |
+| Layer     | Tech                                     |
+| --------- | ---------------------------------------- |
+| Framework | SvelteKit 2.16+, TypeScript, Vite        |
+| Audio     | FFmpeg.wasm, Web Audio API               |
+| Viz       | D3.js (scales), Canvas2D                 |
+| Styling   | TailwindCSS 3.4, PostCSS, autoprefixer   |
+| Controls  | noUiSlider, svelte-dnd-action            |
+| Testing   | Vitest, librosa (Python, fixture parity) |
 
 **Bundle:** ~30MB (FFmpeg + deps), loads in <5s modern browsers
 
@@ -252,7 +252,7 @@ Version 0.1.0 was originally hosted on UW–Madison's GitLab Pages at <https://i
 
 If you use BickGraphing in your research, please cite our preprint:
 
-> Seow, K., Arovas, A., Steinmetz, G., & Bick, E. (2026). *BickGraphing: Web-Based Application for Visual Inspection of Audio Recordings*. arXiv:2601.17014 [eess.AS]. https://arxiv.org/abs/2601.17014
+> Seow, K., Arovas, A., Steinmetz, G., & Bick, E. (2026). _BickGraphing: Web-Based Application for Visual Inspection of Audio Recordings_. arXiv:2601.17014 [eess.AS]. https://arxiv.org/abs/2601.17014
 
 **BibTeX:**
 

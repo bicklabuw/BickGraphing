@@ -1,12 +1,12 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
-title: "BickGraphing: Web-Based Application for Visual Inspection of Audio Recordings"
+message: 'If you use this software, please cite it as below.'
+title: 'BickGraphing: Web-Based Application for Visual Inspection of Audio Recordings'
 type: software
 license: MIT
-repository-code: "https://github.com/bicklabuw/BickGraphing"
-url: "https://bicklabuw.github.io/BickGraphing/"
+repository-code: 'https://github.com/bicklabuw/BickGraphing'
+url: 'https://bicklabuw.github.io/BickGraphing/'
 version: 0.2.0
-date-released: "2026-01-14"
+date-released: '2026-01-14'
 keywords:
   - audio analysis
   - spectrogram
@@ -17,18 +17,18 @@ keywords:
 authors:
   - family-names: Seow
     given-names: Kayley
-    affiliation: "Department of Entomology, University of Wisconsin-Madison"
-    orcid: "https://orcid.org/0009-0007-4408-8381"
+    affiliation: 'Department of Entomology, University of Wisconsin-Madison'
+    orcid: 'https://orcid.org/0009-0007-4408-8381'
   - family-names: Arovas
     given-names: Alexander
-    affiliation: "Department of Biological Systems Engineering, University of Wisconsin-Madison"
-    orcid: "https://orcid.org/0009-0009-6921-2611"
+    affiliation: 'Department of Biological Systems Engineering, University of Wisconsin-Madison'
+    orcid: 'https://orcid.org/0009-0009-6921-2611'
   - family-names: Steinmetz
     given-names: Grace
-    affiliation: "Department of Entomology, University of Wisconsin-Madison"
-    orcid: "https://orcid.org/0009-0004-3957-8026"
+    affiliation: 'Department of Entomology, University of Wisconsin-Madison'
+    orcid: 'https://orcid.org/0009-0004-3957-8026'
   - family-names: Bick
     given-names: Emily
-    affiliation: "Department of Entomology, University of Wisconsin-Madison"
+    affiliation: 'Department of Entomology, University of Wisconsin-Madison'
     email: ebick@wisc.edu
-    orcid: "https://orcid.org/0000-0002-0014-8342"
+    orcid: 'https://orcid.org/0000-0002-0014-8342'

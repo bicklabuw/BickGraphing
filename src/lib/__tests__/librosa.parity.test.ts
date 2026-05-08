@@ -76,9 +76,7 @@ describe('librosa parity — sweep, 10 seconds (long-form drift check)', () => {
 			'10_second_files/sweep_10s_stft.json'
 		);
 		expect(fixture.sample_rate).toBe(SAMPLE_RATE);
-		const { samples } = loadWavMonoInt16(
-			resolve(FIXTURE_DIR, '10_second_files', 'sweep_10s.wav')
-		);
+		const { samples } = loadWavMonoInt16(resolve(FIXTURE_DIR, '10_second_files', 'sweep_10s.wav'));
 		compareToLibrosa(stft(samples), fixture);
 	});
 });
@@ -89,9 +87,7 @@ describe('librosa parity — sweep, 60 seconds (longer-form drift check)', () =>
 			'60_second_files/sweep_60s_stft.json'
 		);
 		expect(fixture.sample_rate).toBe(SAMPLE_RATE);
-		const { samples } = loadWavMonoInt16(
-			resolve(FIXTURE_DIR, '60_second_files', 'sweep_60s.wav')
-		);
+		const { samples } = loadWavMonoInt16(resolve(FIXTURE_DIR, '60_second_files', 'sweep_60s.wav'));
 		compareToLibrosa(stft(samples), fixture);
 	});
 });

@@ -20,11 +20,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
 
-import {
-	isLongDuration,
-	LONG_DURATION_THRESHOLD_SEC,
-	peekWavDuration
-} from '../utils/wavHeader';
+import { isLongDuration, LONG_DURATION_THRESHOLD_SEC, peekWavDuration } from '../utils/wavHeader';
 
 const FIXTURE_DIR = resolve(__dirname, '../../../tests/fixtures');
 

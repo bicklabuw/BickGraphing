@@ -20,15 +20,15 @@ The suite covers three pieces of the audio pipeline:
 
 Terms used throughout this README:
 
-| Term | Meaning |
-| --- | --- |
-| **STFT** | Short-Time Fourier Transform — the algorithm behind every spectrogram. |
-| **FFT** | Fast Fourier Transform — the math kernel inside an STFT. Turns a chunk of audio samples into a list of frequency magnitudes. |
-| **Hann window** | A bell-shaped curve we multiply each audio chunk by before running the FFT, to avoid edge artifacts. |
-| **Bin** | One cell of the FFT output. Bin `k` corresponds to frequency `k × sample_rate / N`. |
-| **Frame** | One chunk of audio (typically 2048 samples = ~46 ms at 44.1 kHz). |
-| **librosa** | Python's gold-standard audio-analysis library. We compare our STFT output against librosa's to verify correctness. |
-| **Fixture** | A frozen audio file or JSON reference checked into the repo, used to make tests reproducible. |
+| Term            | Meaning                                                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **STFT**        | Short-Time Fourier Transform — the algorithm behind every spectrogram.                                                       |
+| **FFT**         | Fast Fourier Transform — the math kernel inside an STFT. Turns a chunk of audio samples into a list of frequency magnitudes. |
+| **Hann window** | A bell-shaped curve we multiply each audio chunk by before running the FFT, to avoid edge artifacts.                         |
+| **Bin**         | One cell of the FFT output. Bin `k` corresponds to frequency `k × sample_rate / N`.                                          |
+| **Frame**       | One chunk of audio (typically 2048 samples = ~46 ms at 44.1 kHz).                                                            |
+| **librosa**     | Python's gold-standard audio-analysis library. We compare our STFT output against librosa's to verify correctness.           |
+| **Fixture**     | A frozen audio file or JSON reference checked into the repo, used to make tests reproducible.                                |
 
 ## Quick start
 
@@ -138,14 +138,14 @@ the rationale.
 
 At a glance:
 
-| File | Tests | Coverage |
-| --- | ---: | --- |
-| `fft.unit.test.ts` | 3 | Hann window math (endpoints, peak, sum) |
-| `stft.integration.test.ts` | 7 | STFT pipeline against synthetic signals + edge cases |
-| `librosa.parity.test.ts` | 5 | Bin-by-bin parity vs librosa across signal classes + durations |
-| `waveformData.unit.test.ts` | 20 | `extractWaveformData` against mocked AudioBuffers |
-| `waveformData.integration.test.ts` | 2 | `extractWaveformData` against real WAV bytes |
-| `wavHeader.unit.test.ts` | 3 | `peekWavDuration` + `isLongDuration` semantics |
+| File                               | Tests | Coverage                                                       |
+| ---------------------------------- | ----: | -------------------------------------------------------------- |
+| `fft.unit.test.ts`                 |     3 | Hann window math (endpoints, peak, sum)                        |
+| `stft.integration.test.ts`         |     7 | STFT pipeline against synthetic signals + edge cases           |
+| `librosa.parity.test.ts`           |     5 | Bin-by-bin parity vs librosa across signal classes + durations |
+| `waveformData.unit.test.ts`        |    20 | `extractWaveformData` against mocked AudioBuffers              |
+| `waveformData.integration.test.ts` |     2 | `extractWaveformData` against real WAV bytes                   |
+| `wavHeader.unit.test.ts`           |     3 | `peekWavDuration` + `isLongDuration` semantics                 |
 
 ## librosa parameters
 

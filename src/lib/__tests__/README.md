@@ -44,13 +44,13 @@ keeping all four in lockstep is what makes librosa parity reliable.
 **No I/O, no fixtures, no pipeline composition** — just the window
 itself.
 
-| Test | Asserts |
-| --- | --- |
-| Endpoints are zero | `w[0] === 0` exactly, `w[N−1] ≈ 0` to 10 decimal places |
+| Test                   | Asserts                                                  |
+| ---------------------- | -------------------------------------------------------- |
+| Endpoints are zero     | `w[0] === 0` exactly, `w[N−1] ≈ 0` to 10 decimal places  |
 | Peaks near 1 at center | Maximum value > 0.9999, even-N center samples close to 1 |
-| Sums to ~N/2 | Within 0.1% relative tolerance |
+| Sums to ~N/2           | Within 0.1% relative tolerance                           |
 
-> This file does *not* directly test the FFT itself — that's verified
+> This file does _not_ directly test the FFT itself — that's verified
 > indirectly through `stft.integration.test.ts` and
 > `librosa.parity.test.ts`. We chose not to add direct FFT tests
 > because librosa parity already covers the math more rigorously than
@@ -66,15 +66,15 @@ the reference-comparison layer.
 
 ### Synthetic 440 Hz tone
 
-| Test | Asserts |
-| --- | --- |
-| 440 Hz peak detection | Every frame's argmax is bin 20 = `round(440 · 2048 / 44100)` |
+| Test                     | Asserts                                                                 |
+| ------------------------ | ----------------------------------------------------------------------- |
+| 440 Hz peak detection    | Every frame's argmax is bin 20 = `round(440 · 2048 / 44100)`            |
 | Peak / noise-floor ratio | Peak magnitude > 100× the median off-peak bin (sharp peak, not a smear) |
 
 ### Frequency sweep
 
-| Test | Asserts |
-| --- | --- |
+| Test               | Asserts                                                                                |
+| ------------------ | -------------------------------------------------------------------------------------- |
 | Up-then-down chirp | Peak bin rises monotonically across frames, then falls; apex within ±2 bins of 2000 Hz |
 
 Uses the real `1_second_files/sweep_1s.wav` fixture. Verifies that the
@@ -82,8 +82,8 @@ pipeline tracks pitch changes over time, not just steady frequencies.
 
 ### Near-Nyquist edge
 
-| Test | Asserts |
-| --- | --- |
+| Test                  | Asserts                                         |
+| --------------------- | ----------------------------------------------- |
 | 21 kHz tone placement | Peak at bin `round(21000 · 2048 / 44100) = 975` |
 
 Validates the upper end of the spectrum — the new top bin (Nyquist,
@@ -91,11 +91,11 @@ Validates the upper end of the spectrum — the new top bin (Nyquist,
 
 ### Empty / very-short input edge cases
 
-| Test | Asserts |
-| --- | --- |
-| Empty input | Returns zero frames (no crash, no error) |
-| Input shorter than `n_fft` (500 samples) | Returns zero frames |
-| Input of exactly `n_fft` samples | Returns exactly one frame |
+| Test                                     | Asserts                                  |
+| ---------------------------------------- | ---------------------------------------- |
+| Empty input                              | Returns zero frames (no crash, no error) |
+| Input shorter than `n_fft` (500 samples) | Returns zero frames                      |
+| Input of exactly `n_fft` samples         | Returns exactly one frame                |
 
 Locks in the contract for boundary inputs that real users might hit
 (empty file, very short clip).
@@ -115,18 +115,18 @@ peak bin exactly.
 
 ### Signal classes (1 second each)
 
-| Test | Signal | Frames stored | Why this signal |
-| --- | --- | --- | --- |
-| Stationary single tone | 440 Hz sine | 6 | Cleanest possible signal — single bin should dominate |
-| Non-stationary | 50→2000→50 Hz chirp | 8 | Tests time-varying frequencies — catches errors invisible on steady tones |
-| Broadband stochastic | Seeded white noise (seed=42) | 8 | All bins active — strictest possible bin-by-bin comparison |
+| Test                   | Signal                       | Frames stored | Why this signal                                                           |
+| ---------------------- | ---------------------------- | ------------- | ------------------------------------------------------------------------- |
+| Stationary single tone | 440 Hz sine                  | 6             | Cleanest possible signal — single bin should dominate                     |
+| Non-stationary         | 50→2000→50 Hz chirp          | 8             | Tests time-varying frequencies — catches errors invisible on steady tones |
+| Broadband stochastic   | Seeded white noise (seed=42) | 8             | All bins active — strictest possible bin-by-bin comparison                |
 
 ### Long-form drift checks (sweep at longer durations)
 
-| Test | Duration | Frames per fixture | What it catches |
-| --- | --- | --- | --- |
-| Sweep, 10 s | 10 s | 8 | Frame-count drift over ~430 frames |
-| Sweep, 60 s | 60 s | 8 | Frame-count drift over ~2580 frames; hop-accumulator floating-point drift |
+| Test        | Duration | Frames per fixture | What it catches                                                           |
+| ----------- | -------- | ------------------ | ------------------------------------------------------------------------- |
+| Sweep, 10 s | 10 s     | 8                  | Frame-count drift over ~430 frames                                        |
+| Sweep, 60 s | 60 s     | 8                  | Frame-count drift over ~2580 frames; hop-accumulator floating-point drift |
 
 The 1-second tests pass quickly; the 60-second test is the heaviest in
 the suite (~3.9 s) because the STFT computes ~2580 frames before
@@ -160,24 +160,24 @@ Verifies the 5000-point cap. Parametrized over 14 input sizes ranging
 from 1 sample to 1,000,000 — including 5001, 7500, 9999 (which used to
 silently break before `Math.ceil` was used for the stride calculation).
 
-| Test | Asserts |
-| --- | --- |
-| Caps output at 5000 points (10 sizes: 1, 100, 4999, 5000, 5001, 7500, 9999, 10000, 50000, 1M) | `waveform.length ≤ 5000` |
-| Returns every sample when input ≤ 5000 (4 sizes: 1, 100, 4999, 5000) | `waveform.length === totalSamples` (no decimation applied) |
+| Test                                                                                          | Asserts                                                    |
+| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Caps output at 5000 points (10 sizes: 1, 100, 4999, 5000, 5001, 7500, 9999, 10000, 50000, 1M) | `waveform.length ≤ 5000`                                   |
+| Returns every sample when input ≤ 5000 (4 sizes: 1, 100, 4999, 5000)                          | `waveform.length === totalSamples` (no decimation applied) |
 
 ### Edge cases
 
-| Test | Weird input | Asserts |
-| --- | --- | --- |
-| Empty slice | `start === end` | Returns `[]`; `minAmp/maxAmp` are finite (not ±Infinity) |
-| Over-long range | Request 100 s on a 1 s buffer | Clamps end to buffer length; doesn't crash |
-| Zero-length buffer | Empty audio | Returns `[]`; finite bounds |
-| Negative start time | `start = -0.5` | All amplitudes finite (the clamp prevents `channelData[-N]` reads) |
+| Test                | Weird input                   | Asserts                                                            |
+| ------------------- | ----------------------------- | ------------------------------------------------------------------ |
+| Empty slice         | `start === end`               | Returns `[]`; `minAmp/maxAmp` are finite (not ±Infinity)           |
+| Over-long range     | Request 100 s on a 1 s buffer | Clamps end to buffer length; doesn't crash                         |
+| Zero-length buffer  | Empty audio                   | Returns `[]`; finite bounds                                        |
+| Negative start time | `start = -0.5`                | All amplitudes finite (the clamp prevents `channelData[-N]` reads) |
 
 ### Decimation fidelity (known limitation)
 
-| Test | Asserts | Status |
-| --- | --- | --- |
+| Test                         | Asserts                                                                       | Status                            |
+| ---------------------------- | ----------------------------------------------------------------------------- | --------------------------------- |
 | Sub-stride peak preservation | A spike at index 17 (between strides at index 0 and 40) appears in the output | **`it.fails`** — expected to fail |
 
 The current implementation strides through samples, so spikes between
@@ -187,8 +187,8 @@ unexpectedly pass and `.fails` should be removed.
 
 ### Time-range correctness
 
-| Test | Asserts |
-| --- | --- |
+| Test                    | Asserts                                                                                            |
+| ----------------------- | -------------------------------------------------------------------------------------------------- |
 | `[start, end)` indexing | First timestamp ≥ start; last timestamp < end; first amplitude reads from `Math.floor(start × SR)` |
 
 Uses a 440 Hz sine where neighboring samples differ noticeably, so
@@ -207,14 +207,14 @@ function under test.
 A clean 1-second 440 Hz sine wave, amp 0.5. Every property of the
 output is precisely predictable.
 
-| Test | Asserts |
-| --- | --- |
-| Output length cap holds | `waveform.length ≤ 5000` |
-| Peak amplitudes near ±0.5 | `maxAmp > 0.49`, `minAmp < -0.49` |
-| Mean amplitude ≈ 0 | A sine is zero-mean — catches sample-shift / endianness bugs |
-| Time window respected | First time ≥ 0, last time < 1 |
-| Timestamps strictly increase | No duplicates, no reversals |
-| All amplitudes finite | No NaN/Infinity/undefined leaks |
+| Test                         | Asserts                                                      |
+| ---------------------------- | ------------------------------------------------------------ |
+| Output length cap holds      | `waveform.length ≤ 5000`                                     |
+| Peak amplitudes near ±0.5    | `maxAmp > 0.49`, `minAmp < -0.49`                            |
+| Mean amplitude ≈ 0           | A sine is zero-mean — catches sample-shift / endianness bugs |
+| Time window respected        | First time ≥ 0, last time < 1                                |
+| Timestamps strictly increase | No duplicates, no reversals                                  |
+| All amplitudes finite        | No NaN/Infinity/undefined leaks                              |
 
 The mean-near-zero check is the sneaky-good one: if endianness were
 wrong (read low byte where high byte should be), you'd see plausible
@@ -228,13 +228,13 @@ sweeps, noise, varied volumes, all stitched together). The signal isn't
 predictable enough for exact-value assertions, so the checks are
 robustness-oriented.
 
-| Test | Asserts |
-| --- | --- |
-| Output length cap holds | `waveform.length ≤ 5000` |
-| Both polarities present | `maxAmp > 0` AND `minAmp < 0` (catches silent zero-fill on decode failure) |
-| All amplitudes finite | No NaN/Infinity leaks |
-| Time window respected | First time ≥ 0, last time ≤ duration |
-| Timestamps strictly increase | No reordering |
+| Test                         | Asserts                                                                    |
+| ---------------------------- | -------------------------------------------------------------------------- |
+| Output length cap holds      | `waveform.length ≤ 5000`                                                   |
+| Both polarities present      | `maxAmp > 0` AND `minAmp < 0` (catches silent zero-fill on decode failure) |
+| All amplitudes finite        | No NaN/Infinity leaks                                                      |
+| Time window respected        | First time ≥ 0, last time ≤ duration                                       |
+| Timestamps strictly increase | No reordering                                                              |
 
 The "both polarities" check is more important than it sounds. Without
 it, a buggy decode that returns all-zeros would pass every other
@@ -247,11 +247,11 @@ to determine duration before the full `decodeAudioData` call. Reads
 only the first 64 KB of a file, walks the RIFF chunk list to find
 `fmt ` and `data`, and returns `dataChunkSize / byteRate`.
 
-| Test | Asserts |
-| --- | --- |
+| Test                                 | Asserts                                                                         |
+| ------------------------------------ | ------------------------------------------------------------------------------- |
 | `isLongDuration` threshold semantics | False at/below 3600 s (the threshold), true above, false for `null`/`undefined` |
-| `peekWavDuration` on a real fixture | A 1-second WAV is read as ~1.0 s (within 0.005 s tolerance) |
-| `peekWavDuration` on non-WAV bytes | Returns `null` (graceful fallback to the regular decode path) |
+| `peekWavDuration` on a real fixture  | A 1-second WAV is read as ~1.0 s (within 0.005 s tolerance)                     |
+| `peekWavDuration` on non-WAV bytes   | Returns `null` (graceful fallback to the regular decode path)                   |
 
 The threshold (3600 s = 1 hour) drives the "this might take a while"
 warning shown to users uploading long files. Crossing it should change

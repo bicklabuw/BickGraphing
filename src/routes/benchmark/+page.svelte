@@ -49,11 +49,7 @@
 		return lut;
 	}
 
-	function renderThumbnail(
-		magnitudes: Float32Array,
-		frameCount: number,
-		halfSize: number
-	): string {
+	function renderThumbnail(magnitudes: Float32Array, frameCount: number, halfSize: number): string {
 		if (frameCount === 0 || halfSize === 0) return '';
 		let dMin = Infinity;
 		let dMax = -Infinity;
@@ -74,7 +70,10 @@
 		const px = img.data;
 
 		for (let y = 0; y < THUMB_H; y++) {
-			const bin = Math.min(halfSize - 1, Math.floor(((THUMB_H - 1 - y) / (THUMB_H - 1)) * (halfSize - 1)));
+			const bin = Math.min(
+				halfSize - 1,
+				Math.floor(((THUMB_H - 1 - y) / (THUMB_H - 1)) * (halfSize - 1))
+			);
 			const rowOffset = y * THUMB_W * 4;
 			for (let x = 0; x < THUMB_W; x++) {
 				const frame = Math.min(frameCount - 1, Math.floor((x / THUMB_W) * frameCount));
@@ -159,7 +158,9 @@
 		return { slope, intercept };
 	}
 
-	$: mainFit = calibration ? fitLinear(calibration.points.map((p) => [p.lengthSec, p.mainMs])) : null;
+	$: mainFit = calibration
+		? fitLinear(calibration.points.map((p) => [p.lengthSec, p.mainMs]))
+		: null;
 	$: workerFit = calibration
 		? fitLinear(calibration.points.map((p) => [p.lengthSec, p.workerMs]))
 		: null;
@@ -241,7 +242,8 @@
 	): Promise<{ frames: number; ms: number; magnitudes: Float32Array; halfSize: number }> {
 		const halfSize = FFT_SIZE >> 1;
 		const expectedFrames = Math.max(0, Math.floor((pcm.length - FFT_SIZE) / HOP_SIZE) + 1);
-		if (expectedFrames === 0) return { frames: 0, ms: 0, magnitudes: new Float32Array(0), halfSize };
+		if (expectedFrames === 0)
+			return { frames: 0, ms: 0, magnitudes: new Float32Array(0), halfSize };
 
 		runFramesDone = 0;
 		runFramesTotal = expectedFrames;
@@ -293,7 +295,14 @@
 						reject(err);
 					};
 					worker.postMessage(
-						{ workerId: w, pcm: pcmSlice, fftSize: FFT_SIZE, hopSize: HOP_SIZE, frameStart, frameCount },
+						{
+							workerId: w,
+							pcm: pcmSlice,
+							fftSize: FFT_SIZE,
+							hopSize: HOP_SIZE,
+							frameStart,
+							frameCount
+						},
 						[pcmSlice.buffer]
 					);
 				})
@@ -318,7 +327,9 @@
 		running = true;
 		results = [];
 
-		console.log(`[bench] starting sweep — lengths=[${lengths.join(', ')}] signal=${signal} workers=${workerCount}`);
+		console.log(
+			`[bench] starting sweep — lengths=[${lengths.join(', ')}] signal=${signal} workers=${workerCount}`
+		);
 		const sweepStart = performance.now();
 
 		progress = 'Warming up...';
@@ -347,7 +358,9 @@
 			console.time(`[bench] ${lengthSec}s main-thread STFT`);
 			const main = runMainThreadSTFT(pcm);
 			console.timeEnd(`[bench] ${lengthSec}s main-thread STFT`);
-			console.log(`[bench] ${lengthSec}s main-thread: ${main.ms.toFixed(0)}ms, ${main.frames} frames`);
+			console.log(
+				`[bench] ${lengthSec}s main-thread: ${main.ms.toFixed(0)}ms, ${main.frames} frames`
+			);
 
 			await new Promise((r) => setTimeout(r, 0));
 
@@ -377,7 +390,9 @@
 			];
 		}
 
-		console.log(`[bench] sweep done — total ${((performance.now() - sweepStart) / 1000).toFixed(1)}s`);
+		console.log(
+			`[bench] sweep done — total ${((performance.now() - sweepStart) / 1000).toFixed(1)}s`
+		);
 
 		const calibPoints = results
 			.filter((r) => r.lengthSec > 0 && r.frames > 0)
@@ -437,9 +452,7 @@
 	$: plotInnerH = plotHeight - plotMargin.top - plotMargin.bottom;
 
 	$: xMax = results.length ? (d3.max(results, (r) => r.lengthSec) as number) : 1;
-	$: yMax = results.length
-		? (d3.max(results, (r) => Math.max(r.mainMs, r.workerMs)) as number)
-		: 1;
+	$: yMax = results.length ? (d3.max(results, (r) => Math.max(r.mainMs, r.workerMs)) as number) : 1;
 	$: xScale = d3.scaleLinear().domain([0, xMax]).nice().range([0, plotInnerW]);
 	$: yScale = d3.scaleLinear().domain([0, yMax]).nice().range([plotInnerH, 0]);
 
@@ -456,14 +469,16 @@
 <div class="mx-auto max-w-4xl p-6">
 	<h1 class="mb-2 text-2xl font-bold">STFT benchmark — main-thread vs web workers</h1>
 	<p class="mb-3 text-sm text-gray-600">
-		Generates synthetic PCM at each length, runs the same STFT (n_fft={FFT_SIZE}, hop={HOP_SIZE}) twice, and reports
-		timings. Find the audio length where web worker savings exceed the verdict threshold.
+		Generates synthetic PCM at each length, runs the same STFT (n_fft={FFT_SIZE}, hop={HOP_SIZE})
+		twice, and reports timings. Find the audio length where web worker savings exceed the verdict
+		threshold.
 	</p>
 	<p class="mb-4 text-sm text-gray-600">
-		Web workers parallelize the STFT computation across CPU cores instead of blocking the main thread, but spawning
-		them has fixed overhead (~50–300 ms total to start the workers and transfer data). For short audio that overhead
-		can exceed the savings; for long audio the parallel speedup wins. The crossover is machine-specific — the verdict
-		column tells you per-row which approach is worth it on this machine, given the threshold you set for "noticeable."
+		Web workers parallelize the STFT computation across CPU cores instead of blocking the main
+		thread, but spawning them has fixed overhead (~50–300 ms total to start the workers and transfer
+		data). For short audio that overhead can exceed the savings; for long audio the parallel speedup
+		wins. The crossover is machine-specific — the verdict column tells you per-row which approach is
+		worth it on this machine, given the threshold you set for "noticeable."
 	</p>
 
 	<div class="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
@@ -471,8 +486,8 @@
 			<h2 class="text-base font-semibold">Predicted spectrogram time per file length</h2>
 			<span class="text-xs text-gray-500">
 				{#if calibration}
-					Calibrated {calibrationAge()} from your last sweep ({calibration.points.length} data
-					points, signal: {calibration.signal})
+					Calibrated {calibrationAge()} from your last sweep ({calibration.points.length} data points,
+					signal: {calibration.signal})
 				{:else}
 					Run a benchmark below to calibrate this table for your machine.
 				{/if}
@@ -574,8 +589,8 @@
 		<label class="flex flex-col text-sm">
 			<span class="font-medium">Verdict threshold (ms saved)</span>
 			<span class="text-xs text-gray-500">
-				<code>ms</code> = milliseconds (1/1000 of a second). 500&nbsp;ms is where the speedup
-				becomes perceptible, and it's above the ~50–300&nbsp;ms worker spawn cost.
+				<code>ms</code> = milliseconds (1/1000 of a second). 500&nbsp;ms is where the speedup becomes
+				perceptible, and it's above the ~50–300&nbsp;ms worker spawn cost.
 			</span>
 			<input
 				type="number"
@@ -669,7 +684,7 @@
 			</tbody>
 		</table>
 
-		<h2 class="mt-8 mb-2 text-lg font-bold">Time vs audio length</h2>
+		<h2 class="mb-2 mt-8 text-lg font-bold">Time vs audio length</h2>
 		<svg width={plotWidth} height={plotHeight} class="rounded border border-gray-200 bg-white">
 			<g transform="translate({plotMargin.left}, {plotMargin.top})">
 				{#each yScale.ticks(5) as tick}
