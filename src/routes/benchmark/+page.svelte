@@ -448,8 +448,8 @@
 	const plotWidth = 700;
 	const plotHeight = 320;
 	const plotMargin = { top: 20, right: 120, bottom: 40, left: 70 };
-	$: plotInnerW = plotWidth - plotMargin.left - plotMargin.right;
-	$: plotInnerH = plotHeight - plotMargin.top - plotMargin.bottom;
+	const plotInnerW = plotWidth - plotMargin.left - plotMargin.right;
+	const plotInnerH = plotHeight - plotMargin.top - plotMargin.bottom;
 
 	$: xMax = results.length ? (d3.max(results, (r) => r.lengthSec) as number) : 1;
 	$: yMax = results.length ? (d3.max(results, (r) => Math.max(r.mainMs, r.workerMs)) as number) : 1;
@@ -502,7 +502,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each REFERENCE_LENGTHS as len}
+				{#each REFERENCE_LENGTHS as len (len)}
 					<tr class="border-t border-gray-200">
 						<td class="px-2 py-1 font-medium">{formatLength(len)}</td>
 						<td class="px-2 py-1 tabular-nums">{formatMs(predictedMs(len))}</td>
@@ -654,7 +654,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each results as r}
+				{#each results as r (r.lengthSec)}
 					<tr class="border-t border-gray-200 align-middle">
 						<td class="px-2 py-1">{r.lengthSec}</td>
 						<td class="px-2 py-1">{r.frames}</td>
@@ -687,7 +687,7 @@
 		<h2 class="mb-2 mt-8 text-lg font-bold">Time vs audio length</h2>
 		<svg width={plotWidth} height={plotHeight} class="rounded border border-gray-200 bg-white">
 			<g transform="translate({plotMargin.left}, {plotMargin.top})">
-				{#each yScale.ticks(5) as tick}
+				{#each yScale.ticks(5) as tick (tick)}
 					<line
 						x1={0}
 						y1={yScale(tick)}
@@ -707,7 +707,7 @@
 						{tick}
 					</text>
 				{/each}
-				{#each xScale.ticks(6) as tick}
+				{#each xScale.ticks(6) as tick (tick)}
 					<line
 						x1={xScale(tick)}
 						y1={0}
@@ -762,7 +762,7 @@
 					<path d={workerPath} fill="none" stroke="#16a34a" stroke-width="2" />
 				{/if}
 
-				{#each results as r}
+				{#each results as r (r.lengthSec)}
 					<circle cx={xScale(r.lengthSec)} cy={yScale(r.mainMs)} r="3" fill="#3b82f6" />
 					<circle cx={xScale(r.lengthSec)} cy={yScale(r.workerMs)} r="3" fill="#16a34a" />
 				{/each}

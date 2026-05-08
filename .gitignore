@@ -42,3 +42,5 @@ __pycache__/
 
 # Personal scratch area
 workingbranch/
+
+.gitlab-ci.yml

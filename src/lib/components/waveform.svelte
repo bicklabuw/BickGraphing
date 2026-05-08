@@ -151,11 +151,8 @@
 
 	// Redraw on data/param changes. $spectrogramBusy is listed as a dep so this re-fires
 	// when the flag clears, driving the settle-redraw at the end of a spectrogram run.
-	$: if (container && waveformData.length > 0 && !$spectrogramBusy) {
-		startTime;
-		endTime;
-		minAmp;
-		maxAmp;
+	$: deps = [startTime, endTime, minAmp, maxAmp];
+	$: if (deps && container && waveformData.length > 0 && !$spectrogramBusy) {
 		createWaveform();
 	}
 

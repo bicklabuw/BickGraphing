@@ -32,7 +32,7 @@
 	export let computedHeight: number = 400;
 
 	let container: HTMLDivElement;
-	let status = 'Waiting...';
+	let _status = 'Waiting...';
 
 	// Cached so resize can repaint without re-running ffmpeg + STFT.
 	let logMagCache: number[][] | null = null;
@@ -273,7 +273,7 @@
 		phase = 'decode';
 		progressPct = 0;
 		try {
-			status = 'Extracting audio...';
+			_status = 'Extracting audio...';
 			console.log(`[Spectrogram] Processing ${inputFileName}`);
 			console.time('[spec-test] total');
 
@@ -353,13 +353,13 @@
 
 			progressPct = 92;
 
-			status = 'Rendering...';
+			_status = 'Rendering...';
 			console.time('[spec-test] canvas render');
 			drawSpectrogram(logMag, sampleRate);
 			console.timeEnd('[spec-test] canvas render');
 			console.timeEnd('[spec-test] total');
 			progressPct = 100;
-			status = 'Done.';
+			_status = 'Done.';
 			phase = 'done';
 		} catch (err) {
 			if (signal.aborted || (err as Error)?.name === 'AbortError') {
@@ -367,7 +367,7 @@
 				return;
 			}
 			console.error('[Spectrogram] Failed:', err);
-			status = 'Error.';
+			_status = 'Error.';
 			phase = 'idle';
 		} finally {
 			if (currentController === myController) {
