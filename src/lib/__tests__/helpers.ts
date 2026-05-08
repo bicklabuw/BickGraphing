@@ -1,7 +1,19 @@
-// Shared test utilities used by the three test files in this directory:
-//   - fft.unit.test.ts        unit tests on the Hann window formula
-//   - stft.integration.test.ts  pipeline composition tests on synthetic signals
-//   - librosa.parity.test.ts   characterization tests vs the librosa reference
+/**
+ * @file Shared test utilities.
+ *
+ * Holds the constants (SAMPLE_RATE, N_FFT, HOP_LENGTH, FIXTURE_DIR), the
+ * STFT pipeline composer (`stft`), synthetic signal generators
+ * (`generateSine`), Node-side WAV loaders (`loadWavMono`,
+ * `loadWavMonoInt16`), and the librosa-fixture comparator
+ * (`compareToLibrosa`). Imports the production `fft` and `createWindows`
+ * from `../utils/fft` so tests exercise the same code the live
+ * spectrogram pipeline uses.
+ *
+ * @author K. Seow <kseow@wisc.edu>
+ * @created 2026-04-23
+ * @version 0.2.0
+ * @license MIT
+ */
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -14,9 +26,7 @@ export const N_FFT = 2048;
 export const HOP_LENGTH = 1024;
 export const FIXTURE_DIR = resolve(__dirname, '../../../tests/fixtures');
 
-// Symmetric Hann window — mirrors the inline formula at audioProcessing.ts:178
-// (`0.5 * (1 - cos(2πi/(N-1)))`). All librosa fixtures are generated with the
-// same window, so this is the formula on the JS side that must match.
+// Symmetric Hann window. Must match audioProcessing.ts:178 and the librosa fixtures.
 export function hann(n: number): Float32Array {
 	const w = new Float32Array(n);
 	for (let i = 0; i < n; i++) {
@@ -31,9 +41,7 @@ export function applyWindow(frame: Float32Array, window: Float32Array): Float32A
 	return out;
 }
 
-// Compose STFT from the existing `createWindows` + Hann + `fft` exports.
-// Returns one magnitude array per frame, length nFft/2 (matches fft() output —
-// Nyquist bin is dropped, same as the rest of the pipeline).
+// Composes the STFT pipeline. Returns one magnitude array per frame, length nFft/2 (Nyquist dropped).
 export function stft(samples: Float32Array, nFft = N_FFT, hop = HOP_LENGTH): Float32Array[] {
 	const frames = createWindows(samples, nFft, hop);
 	const window = hann(nFft);
@@ -65,10 +73,8 @@ export function argmax(arr: ArrayLike<number>): number {
 	return best;
 }
 
-// Permissive mono PCM WAV loader — accepts 16- or 24-bit. Falls back to
-// reading until EOF when the data-chunk size header is implausible (the
-// scipy-written tests/test.wav reports size = 0). Used by integration tests
-// that need to exercise real fixtures outside the STFT 16-bit format.
+// Mono PCM WAV loader (16- or 24-bit). Falls back to EOF when the size header is bogus
+// (scipy-written WAVs report size = 0).
 export function loadWavMono(path: string): {
 	sampleRate: number;
 	samples: Float32Array;
@@ -127,8 +133,7 @@ export function loadWavMono(path: string): {
 	return { sampleRate, samples };
 }
 
-// Minimal mono 16-bit PCM WAV loader. Matches librosa/soundfile semantics
-// (int16 → float in [-1, 1) via /32768) so fixtures and JS see the same floats.
+// Mono 16-bit PCM WAV loader. Matches librosa/soundfile (int16 → float via /32768).
 export function loadWavMonoInt16(path: string): {
 	sampleRate: number;
 	samples: Float32Array;
@@ -184,11 +189,8 @@ export function loadFixture<T extends StftFixture>(name: string): T {
 	return JSON.parse(readFileSync(resolve(FIXTURE_DIR, name), 'utf8')) as T;
 }
 
-// Compares our magnitude frames bin-by-bin against a librosa reference fixture.
-// Tolerance is a fraction of the per-frame peak magnitude (default 1%) — this
-// is the right framing for "agree on the strong stuff, allow noise on the
-// weak stuff" rather than relative-per-bin (which would be infinite for zero
-// bins).
+// Bin-by-bin comparison vs a librosa fixture. Tolerance is a fraction of per-frame peak
+// (avoids infinite relative error on zero bins).
 export function compareToLibrosa(
 	ourFrames: Float32Array[],
 	fixture: StftFixture,
@@ -200,7 +202,7 @@ export function compareToLibrosa(
 	for (let f = 0; f < fixture.frame_indices.length; f++) {
 		const frameIdx = fixture.frame_indices[f];
 		const expectedBins = fixture.magnitudes[f]; // length n_fft/2 + 1
-		const ourMags = ourFrames[frameIdx]; // length n_fft/2
+		const ourMags = ourFrames[frameIdx]; // length n_fft/2 + 1
 
 		expect(argmax(ourMags)).toBe(fixture.peak_bin_per_frame[f]);
 
