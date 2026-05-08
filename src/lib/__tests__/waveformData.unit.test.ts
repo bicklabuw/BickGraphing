@@ -1,23 +1,27 @@
+/**
+ * @file Unit tests for extractWaveformData.
+ *
+ * Exercises `extractWaveformData` against a mocked AudioBuffer (the
+ * function only reads `sampleRate`, `length`, and `getChannelData(0)`,
+ * so a tiny fake suffices — no Web Audio API needed in Node). Covers
+ * the 5000-point output cap, edge cases (empty slice, over-long range,
+ * zero-length buffer, negative start), and time-range / index
+ * correctness. Also documents the known striding-decimation
+ * limitation via an `it.fails` test.
+ *
+ * @author K. Seow <kseow@wisc.edu>
+ * @created 2026-05-03
+ * @version 0.2.0
+ * @license MIT
+ */
+
 import { describe, it, expect } from 'vitest';
 import { extractWaveformData } from '../utils/waveformData';
-
-// Pure unit test on the output-length contract of `extractWaveformData`. No
-// I/O, no fixtures — just verifies that the decimation step keeps the rendered
-// waveform bounded across input sizes the user might realistically supply.
-//
-// Why this matters: the function exists to throw away samples so the SVG
-// `<path>` stays cheap to draw. The `maxPoints = 5000` cap in waveformData.ts
-// is the performance budget. If a future change quietly raises that cap or
-// breaks the striding logic (as `Math.floor` did before being replaced with
-// `Math.ceil`), the rendered waveform could balloon to millions of points and
-// freeze the browser.
 
 const MAX_POINTS = 5000;
 const SAMPLE_RATE = 44100;
 
-// `extractWaveformData` only reads `sampleRate`, `length`, and
-// `getChannelData(0)`, so a 6-line fake is enough. Pass a length for a
-// zero-filled buffer, or a Float32Array for known values at known indices.
+// Fake AudioBuffer — extractWaveformData only reads sampleRate, length, getChannelData(0).
 function mockBuffer(lengthOrData: number | Float32Array, sampleRate = SAMPLE_RATE): AudioBuffer {
 	const data = typeof lengthOrData === 'number' ? new Float32Array(lengthOrData) : lengthOrData;
 	return {
@@ -28,12 +32,7 @@ function mockBuffer(lengthOrData: number | Float32Array, sampleRate = SAMPLE_RAT
 }
 
 describe('extractWaveformData — output length contract', () => {
-	// Inputs span the boundaries that previously exposed an off-by-one in the
-	// striding formula:
-	//   * <= MAX_POINTS: no decimation expected (output equals input)
-	//   * MAX_POINTS+1 .. 2*MAX_POINTS-1: the formerly-buggy range (Math.floor
-	//     produced step=1 here, so the cap was silently violated)
-	//   * >= 2*MAX_POINTS: decimation has always worked here
+	// MAX_POINTS+1..2*MAX_POINTS-1 was the silently-broken range (Math.floor → step=1).
 	it.each([1, 100, 4999, MAX_POINTS, 5001, 7500, 9999, 10000, 50000, 1_000_000])(
 		'caps output at MAX_POINTS for an input of %i samples',
 		(totalSamples) => {
@@ -56,10 +55,7 @@ describe('extractWaveformData — output length contract', () => {
 });
 
 describe('extractWaveformData — edge cases', () => {
-	// When start == end the loop never runs. minAmp/maxAmp are initialized to
-	// ±Infinity and never overwritten, so they currently flow into
-	// graph.svelte:275-278 and corrupt the amplitude slider state. This test
-	// pins the desired behavior: empty waveform, finite bounds.
+	// Empty slice: minAmp/maxAmp must be finite (±Infinity would corrupt graph.svelte:275-278).
 	it('returns finite bounds when start equals end (no samples in slice)', () => {
 		const { waveform, minAmp, maxAmp } = extractWaveformData(mockBuffer(SAMPLE_RATE), 0.5, 0.5);
 		expect(waveform).toEqual([]);
@@ -67,10 +63,7 @@ describe('extractWaveformData — edge cases', () => {
 		expect(Number.isFinite(maxAmp)).toBe(true);
 	});
 
-	// `endSample = Math.min(end * sampleRate, audioBuffer.length)` should
-	// silently clamp an over-long range request rather than return out-of-
-	// bounds samples or crash. This case currently passes — pinning it ensures
-	// the clamp doesn't get accidentally removed.
+	// Over-long range must clamp, not crash.
 	it('clamps end > duration to the buffer length', () => {
 		const buf = mockBuffer(SAMPLE_RATE); // 1 second
 		const { waveform } = extractWaveformData(buf, 0, 100); // request 100s
@@ -78,8 +71,7 @@ describe('extractWaveformData — edge cases', () => {
 		expect(waveform[waveform.length - 1].time).toBeLessThanOrEqual(1.0);
 	});
 
-	// A zero-length buffer (e.g. a file that failed to decode upstream)
-	// should not crash. Same finite-bounds expectation as start==end.
+	// Zero-length buffer must not crash.
 	it('handles a zero-length buffer without crashing', () => {
 		const { waveform, minAmp, maxAmp } = extractWaveformData(mockBuffer(0), 0, 0);
 		expect(waveform).toEqual([]);
@@ -87,19 +79,38 @@ describe('extractWaveformData — edge cases', () => {
 		expect(Number.isFinite(maxAmp)).toBe(true);
 	});
 
-	// Negative `start` produces negative sample indices in the loop.
-	// `channelData[-N]` is `undefined` on a Float32Array, contaminating every
-	// output point. Desired behavior: clamp start to 0 (or guard the loop).
+	// Negative start would yield channelData[-N] = undefined; output must stay finite.
 	it('produces only finite amplitudes for a negative start time', () => {
 		const { waveform } = extractWaveformData(mockBuffer(SAMPLE_RATE), -0.5, 1);
 		expect(waveform.every((p) => Number.isFinite(p.amplitude))).toBe(true);
 	});
 });
 
-// Pins the [start, end] → indices mapping: (a) starts at the right sample,
-// (b) stops strictly before end, (c) reports the actual amplitude at those
-// indices. Slice [0.25, 0.75] picked so both bounds multiply cleanly by
-// 44100 — no float drift in the timestamp checks.
+// Known limitation: the current implementation decimates by simple striding
+// (every Nth sample), so a peak that falls between strides is silently dropped
+// from the displayed waveform. This block documents the limitation. If the
+// implementation moves to min/max-per-bucket decimation, this test will start
+// unexpectedly passing — at which point `.fails` should be removed and the
+// JORS paper note updated.
+describe('extractWaveformData — decimation fidelity (known limitation)', () => {
+	it.fails('preserves a sub-stride peak (currently dropped by striding)', () => {
+		// 200,000 samples → step = ceil(200000 / 5000) = 40.
+		// Index 17 sits between strides 0 and 40, so the loop never reads it.
+		const data = new Float32Array(200_000);
+		const spikeIndex = 17;
+		const spikeValue = 1.0;
+		data[spikeIndex] = spikeValue;
+
+		const buf = mockBuffer(data);
+		const { maxAmp } = extractWaveformData(buf, 0, data.length / SAMPLE_RATE);
+
+		// Expected to fail: striding skips index 17, so maxAmp is 0, not 1.0.
+		expect(maxAmp).toBe(spikeValue);
+	});
+});
+
+// [start, end] → indices: (a) starts at right sample, (b) stops strictly before end,
+// (c) reads amplitude at the right index. [0.25, 0.75] avoids float drift at 44100 Hz.
 describe('extractWaveformData — time-range correctness', () => {
 	it('emits times within [start, end) and reads amplitudes from the right indices', () => {
 		// 1s sine — neighboring samples differ, so an off-by-one would fail (c).
@@ -118,8 +129,7 @@ describe('extractWaveformData — time-range correctness', () => {
 		// (b) Last timestamp < end. Catches the loop condition flipping to `<=`.
 		expect(waveform.at(-1)!.time).toBeLessThan(0.75);
 
-		// (c) Amplitude matches data[startSample] directly — tests indexing,
-		// not sine math.
+		// (c) Amplitude matches data[startSample] — tests indexing, not sine math.
 		const startSample = Math.floor(0.25 * SAMPLE_RATE);
 		expect(waveform[0].amplitude).toBe(data[startSample]);
 	});
