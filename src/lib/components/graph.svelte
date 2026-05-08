@@ -76,11 +76,7 @@
 	let spectrogramFirstRendered: Record<string, boolean> = {};
 	let openDownloadMenu: string | null = null;
 
-	function handleDownload(
-		name: string,
-		kind: 'wave' | 'spec',
-		format: 'svg' | 'png' | 'jpeg'
-	) {
+	function handleDownload(name: string, kind: 'wave' | 'spec', format: 'svg' | 'png' | 'jpeg') {
 		if (kind === 'wave') waveformRefs[name]?.downloadWaveform(format);
 		else spectrogramRefs[name]?.downloadSpectrogram(format);
 		openDownloadMenu = null;
@@ -432,13 +428,7 @@
 			{/if}
 		</div>
 	{:else}
-		<Filelist
-			{selectedFiles}
-			{audioDurationMap}
-			{removeFile}
-			{removeAllFiles}
-			{handleReorder}
-		/>
+		<Filelist {selectedFiles} {audioDurationMap} {removeFile} {removeAllFiles} {handleReorder} />
 	{/if}
 
 	{#if selectedFiles.length > 0}
@@ -978,9 +968,7 @@
 											step={0.001}
 											start={[
 												timeRangeMap[audioFile.name]?.start ?? 0,
-												timeRangeMap[audioFile.name]?.end ??
-													audioDurationMap[audioFile.name] ??
-													10
+												timeRangeMap[audioFile.name]?.end ?? audioDurationMap[audioFile.name] ?? 10
 											]}
 											bind:values={timeValuesMap[audioFile.name]}
 											on:change={(e) => handleTimeChange(e, audioFile.name)}
