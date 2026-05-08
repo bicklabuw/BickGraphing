@@ -132,9 +132,28 @@ def create_white_noise(duration, sample_rate, amplitude=1.0):
         amplitude = 1.0
     elif amplitude < 0.0:
         amplitude = 0.0
-    
+
     noise = np.random.uniform(low=-amplitude, high=amplitude, size=int(sample_rate * duration))
     return noise
+
+def create_siren(duration, sample_rate, low_freq=600, high_freq=1500, cycle_seconds=2.0, amplitude=1.0):
+    """Wail-style siren: instantaneous frequency oscillates sinusoidally between low_freq and high_freq.
+
+    Distinct from `create_continuous_sweep`, which sweeps once up and once down over the whole
+    duration. Here the frequency cycles every `cycle_seconds`, producing the recognizable wail.
+    """
+    if amplitude > 1.0:
+        amplitude = 1.0
+    elif amplitude < 0.0:
+        amplitude = 0.0
+
+    n = int(sample_rate * duration)
+    t = np.linspace(0, duration, n, endpoint=False)
+    center = (low_freq + high_freq) / 2.0
+    half_range = (high_freq - low_freq) / 2.0
+    freq_t = center + half_range * np.sin(2 * np.pi * t / cycle_seconds)
+    phase = 2 * np.pi * np.cumsum(freq_t) / sample_rate
+    return amplitude * np.sin(phase)
 
 def create_varied_volume(frequency, sample_rate, duration_note, notes_per_ascent=2, num_periods=2, amplitude=1.0):
     """Create a sound that varies in volume in the specified frequency"""
