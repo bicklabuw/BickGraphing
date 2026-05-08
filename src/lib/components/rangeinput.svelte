@@ -31,6 +31,14 @@
 	let localMin: string = minValue.toString(); // Local string for editing
 	$: localMin = minValue.toString(); //in sync when parent updates
 
+	// Slug derived from the label so multiple Rangeinputs on one page don't collide on input ids.
+	$: slug = label
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-|-$/g, '');
+	$: minId = `${slug}-min-input`;
+	$: maxId = `${slug}-max-input`;
+
 	function commitMin() {
 		const normalized = localMin.replace(',', '.');
 		const parsed = parseFloat(normalized);
@@ -67,12 +75,12 @@
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 		<!-- Min input (safe text-based editing) -->
 		<div class="space-y-1">
-			<label for="min-input" class="block text-sm font-semibold tracking-wide text-gray-700">
+			<label for={minId} class="block text-sm font-semibold tracking-wide text-gray-700">
 				{minLabel}
 				{unit}
 			</label>
 			<input
-				id="min-input"
+				id={minId}
 				type="text"
 				bind:value={localMin}
 				on:blur={commitMin}
@@ -84,12 +92,12 @@
 
 		<!-- Max input (still number for convenience) -->
 		<div class="space-y-1">
-			<label for="max-input" class="block text-sm font-semibold tracking-wide text-gray-700">
+			<label for={maxId} class="block text-sm font-semibold tracking-wide text-gray-700">
 				{maxLabel}
 				{unit}
 			</label>
 			<input
-				id="max-input"
+				id={maxId}
 				type="number"
 				value={maxValue}
 				{step}

@@ -60,6 +60,7 @@
 	class="relative isolate inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg ring-1 ring-inset ring-blue-500/30 transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
 >
 	<svg
+		aria-hidden="true"
 		class="h-5 w-5 text-white opacity-80"
 		fill="none"
 		stroke="currentColor"
@@ -88,7 +89,8 @@
 >
 	<img
 		src={asset('/icons/folder.svg')}
-		alt="Upload Folder Icon"
+		alt=""
+		aria-hidden="true"
 		class="h-10 w-10 text-blue-400 opacity-80"
 	/>
 
