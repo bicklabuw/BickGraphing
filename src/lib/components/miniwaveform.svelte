@@ -77,7 +77,11 @@
 			.attr('width', '100%')
 			.attr('height', height)
 			.attr('viewBox', `0 0 ${width} ${height}`)
-			.attr('preserveAspectRatio', 'xMidYMid meet');
+			.attr('preserveAspectRatio', 'xMidYMid meet')
+			.attr('role', 'img')
+			.attr('aria-label', `${audioFileName} waveform thumbnail`);
+
+		svg.append('title').text(`${audioFileName} waveform thumbnail`);
 
 		svg
 			.append('defs')

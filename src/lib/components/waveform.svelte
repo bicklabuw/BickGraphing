@@ -185,7 +185,14 @@
 			.attr('width', '100%')
 			.attr('height', height)
 			.attr('viewBox', `0 0 ${width} ${height}`)
-			.attr('preserveAspectRatio', 'xMidYMid meet');
+			.attr('preserveAspectRatio', 'xMidYMid meet')
+			.attr('role', 'img')
+			.attr(
+				'aria-label',
+				`${audioFileName.replace(/\.wav$/i, '')} waveform from ${startTime.toFixed(2)} to ${endTime.toFixed(2)} seconds`
+			);
+
+		svg.append('title').text(`${audioFileName.replace(/\.wav$/i, '')}: Waveform`);
 
 		svg
 			.append('defs')
@@ -265,12 +272,21 @@
 
 {#if loading}
 	<div
+		role="status"
+		aria-live="polite"
+		aria-label={`Generating waveform, ${progressPercent} percent complete`}
 		class="flex w-full items-center justify-center rounded-lg bg-gray-50"
 		style="aspect-ratio: 21 / 9;"
 	>
 		<div class="w-3/4">
 			<p class="mb-2 text-center text-sm font-medium text-gray-700">Generating waveform...</p>
-			<div class="h-3 w-full overflow-hidden rounded-full bg-gray-200">
+			<div
+				role="progressbar"
+				aria-valuemin="0"
+				aria-valuemax="100"
+				aria-valuenow={progressPercent}
+				class="h-3 w-full overflow-hidden rounded-full bg-gray-200"
+			>
 				<div
 					class="h-full rounded-full bg-blue-600 transition-all duration-200"
 					style="width: {progressPercent}%"

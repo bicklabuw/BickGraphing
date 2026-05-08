@@ -34,6 +34,8 @@
 				Selected File{selectedFiles.length === 1 ? '' : 's'}
 			</h3>
 			<button
+				type="button"
+				aria-label="Remove all selected files"
 				class="rounded-md border border-red-500 bg-red-50 px-3 py-1 text-xs font-medium text-red-700 transition hover:bg-red-100"
 				on:click={removeAllFiles}
 			>
@@ -57,7 +59,8 @@
 					<div class="flex items-center gap-2 overflow-hidden">
 						<img
 							src={asset('/icons/draggingarrowvertical.svg')}
-							alt="Drag Icon"
+							alt=""
+							aria-hidden="true"
 							class="h-4 w-4 opacity-60 transition group-hover:opacity-100"
 						/>
 						<p class="truncate text-sm font-medium text-gray-800">{file.name}</p>
@@ -76,6 +79,8 @@
 							{audioDurationMap[file.name]?.toFixed(2) ?? '--'}s
 						</span>
 						<button
+							type="button"
+							aria-label={`Remove ${file.name}`}
 							class="ml-2 text-xs font-medium text-red-500 transition hover:text-red-800"
 							on:click={() => removeFile(file.name)}
 						>
