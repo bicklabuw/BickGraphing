@@ -59,7 +59,8 @@
 				class="h-5 w-5 rounded border border-gray-600 peer-checked:border-purple-600 peer-checked:bg-purple-600"
 			></span>
 			<span class="text-base text-gray-800 peer-checked:font-semibold">
-				Spectrogram{#if !spectrogramOnline} (Coming Soon! Reworking for smoother performance!){/if}
+				Spectrogram{#if !spectrogramOnline}
+					(Coming Soon! Reworking for smoother performance!){/if}
 			</span>
 		</label>
 	</div>

@@ -36,7 +36,18 @@ export default ts.config(
 			}
 		},
 		rules: {
-			'@typescript-eslint/no-explicit-any': 'off'
+			'@typescript-eslint/no-explicit-any': 'off',
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{ argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
+			],
+			'svelte/infinite-reactive-loop': 'off'
+		}
+	},
+	{
+		files: ['src/routes/faq/+page.svelte'],
+		rules: {
+			'svelte/no-at-html-tags': 'off'
 		}
 	}
 );
