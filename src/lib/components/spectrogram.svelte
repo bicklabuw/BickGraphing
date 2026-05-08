@@ -714,17 +714,25 @@
 		<div class="flex justify-start">
 			{#if hasRendered && phase !== 'idle'}
 				<div
+					role="status"
+					aria-live="polite"
 					class="max-w-md rounded-lg bg-white px-3 py-2 text-xs shadow-sm ring-1 ring-gray-200 transition-all duration-300"
 				>
 					{#if phase === 'done'}
 						<div class="flex items-center gap-2 font-medium text-green-700">
-							<span class="inline-block h-2 w-2 rounded-full bg-green-500"></span>
+							<span aria-hidden="true" class="inline-block h-2 w-2 rounded-full bg-green-500"></span>
 							<span>Spectrogram Ready</span>
 						</div>
 					{:else}
 						<div class="flex items-center gap-2">
 							<span class="font-medium text-gray-800">{phaseLabel}</span>
-							<div class="h-1 w-32 overflow-hidden rounded-full bg-gray-200">
+							<div
+								role="progressbar"
+								aria-valuemin="0"
+								aria-valuemax="100"
+								aria-valuenow={Math.round(progressPct)}
+								class="h-1 w-32 overflow-hidden rounded-full bg-gray-200"
+							>
 								<div
 									class="h-full rounded-full bg-blue-600 transition-all duration-200"
 									style="width: {progressPct}%"
@@ -743,12 +751,28 @@
 		</div>
 	</div>
 	<div class="relative w-full" style="aspect-ratio: 21 / 9;">
-		<div bind:this={container} class="spectrogram h-full w-full"></div>
+		<div
+			bind:this={container}
+			role="img"
+			aria-label={`${audioFileName.replace(/\.wav$/i, '')} spectrogram from ${startTime.toFixed(2)} to ${endTime.toFixed(2)} seconds, ${minFreq} to ${maxFreq} hertz`}
+			class="spectrogram h-full w-full"
+		></div>
 		{#if !hasRendered && phase !== 'idle' && phase !== 'done'}
-			<div class="absolute inset-0 flex items-center justify-center rounded-lg bg-gray-50">
+			<div
+				role="status"
+				aria-live="polite"
+				aria-label={`${phaseLabel}, ${Math.round(progressPct)} percent complete`}
+				class="absolute inset-0 flex items-center justify-center rounded-lg bg-gray-50"
+			>
 				<div class="w-3/4">
 					<p class="mb-2 text-center text-sm font-medium text-gray-700">{phaseLabel}</p>
-					<div class="h-3 w-full overflow-hidden rounded-full bg-gray-200">
+					<div
+						role="progressbar"
+						aria-valuemin="0"
+						aria-valuemax="100"
+						aria-valuenow={Math.round(progressPct)}
+						class="h-3 w-full overflow-hidden rounded-full bg-gray-200"
+					>
 						<div
 							class="h-full rounded-full bg-blue-600 transition-all duration-200"
 							style="width: {progressPct}%"

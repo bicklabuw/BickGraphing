@@ -71,7 +71,11 @@
 			} as any,
 			format,
 			orientation: vertical ? 'vertical' : 'horizontal',
-			direction: vertical ? 'rtl' : 'ltr'
+			direction: vertical ? 'rtl' : 'ltr',
+			handleAttributes: [
+				{ 'aria-label': `${title} minimum` },
+				{ 'aria-label': `${title} maximum` }
+			]
 		});
 
 		slider.on('update', (sliderVals: (string | number)[]) => {
@@ -157,6 +161,7 @@
 			<input
 				type="text"
 				value={maxRangeStr}
+				aria-label={`${title} maximum value`}
 				on:change={handleMaxInput}
 				on:blur={handleMaxInput}
 				class="mb-6 w-20 rounded border border-gray-400 px-1 text-center"
@@ -176,6 +181,7 @@
 			<input
 				type="text"
 				value={minRangeStr}
+				aria-label={`${title} minimum value`}
 				on:change={handleMinInput}
 				on:blur={handleMinInput}
 				class="mt-6 w-20 rounded border border-gray-400 px-1 text-center"
@@ -198,6 +204,7 @@
 				<input
 					type="text"
 					value={minRangeStr}
+					aria-label={`${title} minimum value`}
 					on:change={handleMinInput}
 					on:blur={handleMinInput}
 					class="w-20 rounded border border-gray-400 px-1 text-center"
@@ -212,6 +219,7 @@
 				<input
 					type="text"
 					value={maxRangeStr}
+					aria-label={`${title} maximum value`}
 					on:change={handleMaxInput}
 					on:blur={handleMaxInput}
 					class="w-20 rounded border border-gray-400 px-1 text-center"
