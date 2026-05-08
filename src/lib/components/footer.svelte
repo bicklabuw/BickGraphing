@@ -27,7 +27,9 @@
 >
 	<div
 		class="footer-texture absolute inset-0"
-		style="background-image: url({asset('/textures/green-frosted-noise.jpg')}); background-position: {parallaxX}% {parallaxY}%"
+		style="background-image: url({asset(
+			'/textures/green-frosted-noise.jpg'
+		)}); background-position: {parallaxX}% {parallaxY}%"
 	></div>
 
 	<div class="pointer-events-none absolute inset-0 bg-white/50"></div>

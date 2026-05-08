@@ -72,10 +72,7 @@
 			format,
 			orientation: vertical ? 'vertical' : 'horizontal',
 			direction: vertical ? 'rtl' : 'ltr',
-			handleAttributes: [
-				{ 'aria-label': `${title} minimum` },
-				{ 'aria-label': `${title} maximum` }
-			]
+			handleAttributes: [{ 'aria-label': `${title} minimum` }, { 'aria-label': `${title} maximum` }]
 		});
 
 		slider.on('update', (sliderVals: (string | number)[]) => {
@@ -131,10 +128,7 @@
 
 	$: if (sliderEl && start) {
 		const sliderInstance = (sliderEl as any).noUiSlider;
-		if (
-			sliderInstance &&
-			(!lastStart || lastStart[0] !== start[0] || lastStart[1] !== start[1])
-		) {
+		if (sliderInstance && (!lastStart || lastStart[0] !== start[0] || lastStart[1] !== start[1])) {
 			sliderInstance.set(start);
 			values = [start[0], start[1]];
 			minRangeStr = start[0].toString();
@@ -142,7 +136,6 @@
 			lastStart = [start[0], start[1]];
 		}
 	}
-
 </script>
 
 {#if vertical}
