@@ -520,12 +520,17 @@
 									{@const waveKey = `${audioFile.name}::wave`}
 									<div class="relative" data-download-menu>
 										<button
+											type="button"
+											aria-haspopup="menu"
+											aria-expanded={openDownloadMenu === waveKey}
+											aria-label={`Download waveform for ${audioFile.name}`}
 											class="flex items-center gap-1 rounded-md border border-green-500 bg-green-50 px-3 py-1 text-xs font-medium text-green-700 transition hover:bg-green-100"
 											on:click={() =>
 												(openDownloadMenu = openDownloadMenu === waveKey ? null : waveKey)}
 										>
 											Download
 											<svg
+												aria-hidden="true"
 												class="h-3 w-3"
 												viewBox="0 0 12 12"
 												fill="none"
@@ -537,19 +542,30 @@
 										</button>
 										{#if openDownloadMenu === waveKey}
 											<div
+												role="menu"
+												aria-label={`Download format for ${audioFile.name} waveform`}
 												class="absolute right-0 z-10 mt-1 w-28 divide-y divide-green-200 overflow-hidden rounded-md border border-green-500 bg-white shadow-md"
 											>
 												<button
+													type="button"
+													role="menuitem"
+													aria-label="Download as PNG"
 													class="block w-full px-3 py-1 text-left text-xs font-medium text-green-700 transition hover:bg-green-100"
 													on:click={() => handleDownload(audioFile.name, 'wave', 'png')}
 													>.png</button
 												>
 												<button
+													type="button"
+													role="menuitem"
+													aria-label="Download as JPEG"
 													class="block w-full px-3 py-1 text-left text-xs font-medium text-green-700 transition hover:bg-green-100"
 													on:click={() => handleDownload(audioFile.name, 'wave', 'jpeg')}
 													>.jpeg</button
 												>
 												<button
+													type="button"
+													role="menuitem"
+													aria-label="Download as SVG"
 													class="block w-full px-3 py-1 text-left text-xs font-medium text-green-700 transition hover:bg-green-100"
 													on:click={() => handleDownload(audioFile.name, 'wave', 'svg')}
 													>.svg</button
@@ -605,6 +621,8 @@
 						<!-- Reset button for waveform -->
 						{#if showSliders && showReset}
 							<button
+								type="button"
+								aria-label={`Reset waveform amplitude and time range for ${audioFile.name}`}
 								class="rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-700 transition hover:bg-red-50"
 								on:click={() => {
 									timeRangeMap[audioFile.name] = {
@@ -777,12 +795,17 @@
 									{@const specKey = `${audioFile.name}::spec`}
 									<div class="relative" data-download-menu>
 										<button
+											type="button"
+											aria-haspopup="menu"
+											aria-expanded={openDownloadMenu === specKey}
+											aria-label={`Download spectrogram for ${audioFile.name}`}
 											class="flex items-center gap-1 rounded-md border border-green-500 bg-green-50 px-3 py-1 text-xs font-medium text-green-700 transition hover:bg-green-100"
 											on:click={() =>
 												(openDownloadMenu = openDownloadMenu === specKey ? null : specKey)}
 										>
 											Download
 											<svg
+												aria-hidden="true"
 												class="h-3 w-3"
 												viewBox="0 0 12 12"
 												fill="none"
@@ -794,19 +817,30 @@
 										</button>
 										{#if openDownloadMenu === specKey}
 											<div
+												role="menu"
+												aria-label={`Download format for ${audioFile.name} spectrogram`}
 												class="absolute right-0 z-10 mt-1 w-28 divide-y divide-green-200 overflow-hidden rounded-md border border-green-500 bg-white shadow-md"
 											>
 												<button
+													type="button"
+													role="menuitem"
+													aria-label="Download as PNG"
 													class="block w-full px-3 py-1 text-left text-xs font-medium text-green-700 transition hover:bg-green-100"
 													on:click={() => handleDownload(audioFile.name, 'spec', 'png')}
 													>.png</button
 												>
 												<button
+													type="button"
+													role="menuitem"
+													aria-label="Download as JPEG"
 													class="block w-full px-3 py-1 text-left text-xs font-medium text-green-700 transition hover:bg-green-100"
 													on:click={() => handleDownload(audioFile.name, 'spec', 'jpeg')}
 													>.jpeg</button
 												>
 												<button
+													type="button"
+													role="menuitem"
+													aria-label="Download as SVG"
 													class="block w-full px-3 py-1 text-left text-xs font-medium text-green-700 transition hover:bg-green-100"
 													on:click={() => handleDownload(audioFile.name, 'spec', 'svg')}
 													>.svg</button
@@ -911,6 +945,8 @@
 									<svelte:fragment slot="actions">
 										{#if showSliders && showReset}
 											<button
+												type="button"
+												aria-label={`Reset spectrogram time and frequency range for ${audioFile.name}`}
 												class="rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-700 transition hover:bg-red-50"
 												on:click={() => {
 													timeRangeMap[audioFile.name] = {
