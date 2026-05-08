@@ -15,6 +15,8 @@
 </script>
 
 <button
+	type="button"
+	aria-pressed={show}
 	class="rounded-md border border-purple-300 px-3 py-1 text-xs font-medium text-purple-700 transition hover:bg-purple-50"
 	on:click={onToggle}
 >

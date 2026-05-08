@@ -27,7 +27,7 @@
 	</h3>
 	<p class="mb-3 text-sm text-gray-500">Pick one or both.</p>
 
-	<div class="flex flex-wrap gap-2">
+	<div class="flex flex-wrap gap-2" role="group" aria-label="Visualization options">
 		<label
 			class="flex w-fit cursor-pointer items-center gap-3 rounded-lg border border-gray-300 bg-white p-3 pr-6 shadow-sm transition hover:border-gray-400 hover:bg-gray-50 has-[:checked]:border-purple-400 has-[:checked]:bg-purple-50 has-[:checked]:shadow-md"
 		>
