@@ -4,8 +4,8 @@ title: "BickGraphing: Web-Based Application for Visual Inspection of Audio Recor
 type: software
 license: MIT
 repository-code: "https://github.com/bicklabuw/BickGraphing"
-url: "https://ie-graphing-709865.pages.doit.wisc.edu"
-version: 1.0.0
+url: "https://bicklabuw.github.io/BickGraphing/"
+version: 0.2.0
 date-released: "2026-01-14"
 keywords:
   - audio analysis
