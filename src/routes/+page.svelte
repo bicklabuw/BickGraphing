@@ -14,22 +14,24 @@
 
 	let steps: Step[] = [
 		{
-			title: 'Drag & Drop Your Audio',
-			description:
-				'Drop one or more .wav files into the tool. Everything runs locally—no files are uploaded.'
+			title: 'Drop .wav files',
+			description: 'Files load locally, nothing uploads.'
 		},
 		{
-			title: 'Choose Your Visualization',
-			description:
-				'Pick between waveform, spectrogram, or both to explore your audio data visually.'
+			title: 'Pick a view',
+			description: 'Waveform, spectrogram, or both.'
 		},
 		{
-			title: 'Adjust Your Settings',
-			description: 'Toggle Sliders to fine-tune amplitude, time, and frequency.'
+			title: 'Adjust',
+			description: 'Sliders for amplitude, time, and frequency. Details for per-file metadata.'
 		},
 		{
-			title: 'Download Your Graph',
-			description: 'Download as .png .jpg .svg files when you are ready.'
+			title: 'Click a mini waveform thumbnail',
+			description: 'Jumps the page to that file’s full waveform.'
+		},
+		{
+			title: 'Download',
+			description: 'Save any graph as SVG, PNG, or JPEG.'
 		}
 	];
 </script>

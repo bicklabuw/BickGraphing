@@ -235,11 +235,26 @@
 		return `${ageDay} day${ageDay === 1 ? '' : 's'} ago`;
 	}
 
-	function parsedLengths(): number[] {
-		return lengthsInput
+	const RISKY_LENGTH_SEC = 1800;
+	const LENGTH_CAP_SEC = 2700;
+
+	function rawParsedLengths(input: string): number[] {
+		return input
 			.split(/[,\s]+/)
 			.map((s) => parseFloat(s.trim()))
 			.filter((n) => !isNaN(n) && n >= 0);
+	}
+
+	function parsedLengths(input: string = lengthsInput): number[] {
+		return rawParsedLengths(input).filter((n) => n <= LENGTH_CAP_SEC);
+	}
+
+	$: parsedLengthChips = parsedLengths(lengthsInput);
+	$: overCapCount = rawParsedLengths(lengthsInput).filter((n) => n > LENGTH_CAP_SEC).length;
+
+	function removeLengthAt(idx: number) {
+		const next = parsedLengthChips.filter((_, i) => i !== idx);
+		lengthsInput = next.join(', ');
 	}
 
 	function generatePCM(durationSec: number, kind: Signal): Float32Array {
@@ -565,6 +580,19 @@
 		</p>
 	</div>
 
+	<div
+		role="alert"
+		class="mb-4 rounded-lg border-2 border-red-400 bg-red-50 p-3 text-sm text-red-800"
+	>
+		<p class="font-bold">⚠ Warning: long lengths can hang the page</p>
+		<p class="mt-1">
+			Each length runs the STFT once on the main thread (no worker), then once with workers. The
+			main-thread pass blocks the UI for the full duration, and very large values (roughly
+			1800&nbsp;s and above) can crash the tab on slower machines and require a fresh reload. Start
+			with smaller values and only add long durations once you know your machine handles them.
+		</p>
+	</div>
+
 	<div class="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-4">
 		<div class="flex flex-col text-sm">
 			<div class="flex items-center justify-between gap-2">
@@ -598,6 +626,51 @@
 				class="mt-auto rounded border border-gray-300 px-2 py-1"
 				disabled={running}
 			/>
+			{#if parsedLengthChips.length > 0}
+				<div class="mt-1.5 flex flex-wrap gap-1" aria-label="Parsed lengths">
+					{#each parsedLengthChips as len, i (i + '-' + len)}
+						{#if len >= RISKY_LENGTH_SEC}
+							<span
+								class="inline-flex items-center gap-1 rounded-full border border-red-400 bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700"
+								title="May hang or crash the tab on slower machines."
+							>
+								⚠ {len}s
+								<button
+									type="button"
+									on:click={() => removeLengthAt(i)}
+									disabled={running}
+									aria-label={`Remove ${len}s`}
+									class="-mr-0.5 ml-0.5 rounded-full px-1 leading-none text-red-500 transition hover:bg-red-100 hover:text-red-800 disabled:opacity-50"
+								>
+									×
+								</button>
+							</span>
+						{:else}
+							<span
+								class="inline-flex items-center gap-1 rounded-full border border-gray-300 bg-white px-2 py-0.5 text-[11px] text-gray-700"
+							>
+								{len}s
+								<button
+									type="button"
+									on:click={() => removeLengthAt(i)}
+									disabled={running}
+									aria-label={`Remove ${len}s`}
+									class="-mr-0.5 ml-0.5 rounded-full px-1 leading-none text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 disabled:opacity-50"
+								>
+									×
+								</button>
+							</span>
+						{/if}
+					{/each}
+				</div>
+				{#if overCapCount > 0}
+					<p class="mt-1 text-[11px] text-red-700">
+						{overCapCount}
+						{overCapCount === 1 ? 'value' : 'values'} above the {LENGTH_CAP_SEC}s cap will be
+						ignored.
+					</p>
+				{/if}
+			{/if}
 		</div>
 		<label class="flex flex-col text-sm">
 			<span class="font-medium">Signal</span>
