@@ -179,7 +179,7 @@
 	}
 
 	function formatMs(ms: number | null): string {
-		if (ms === null) return '—';
+		if (ms === null) return 'n/a';
 		if (ms < 1000) return `${Math.round(ms)} ms`;
 		if (ms < 60000) return `${(ms / 1000).toFixed(2)} s`;
 		const min = Math.floor(ms / 60000);
@@ -421,7 +421,7 @@
 	function verdict(r: Result): string {
 		if (r.savedMs > thresholdMs) return '✅ web workers';
 		if (r.savedMs < -thresholdMs) return '❌ main-thread';
-		return '— either';
+		return '➖ either';
 	}
 
 	function toMarkdown(): string {
@@ -441,7 +441,7 @@
 			await navigator.clipboard.writeText(toMarkdown());
 			progress = 'Copied Markdown to clipboard.';
 		} catch {
-			progress = 'Clipboard write failed — copy from the table manually.';
+			progress = 'Clipboard write failed. Copy from the table manually.';
 		}
 	}
 
@@ -467,7 +467,7 @@
 </script>
 
 <div class="mx-auto max-w-4xl p-6">
-	<h1 class="mb-2 text-2xl font-bold">STFT benchmark — main-thread vs web workers</h1>
+	<h1 class="mb-2 text-2xl font-bold">STFT benchmark: main-thread vs web workers</h1>
 	<p class="mb-3 text-sm text-gray-600">
 		Generates synthetic PCM at each length, runs the same STFT (n_fft={FFT_SIZE}, hop={HOP_SIZE})
 		twice, and reports timings. Find the audio length where web worker savings exceed the verdict
@@ -477,7 +477,7 @@
 		Web workers parallelize the STFT computation across CPU cores instead of blocking the main
 		thread, but spawning them has fixed overhead (~50–300 ms total to start the workers and transfer
 		data). For short audio that overhead can exceed the savings; for long audio the parallel speedup
-		wins. The crossover is machine-specific — the verdict column tells you per-row which approach is
+		wins. The crossover is machine-specific. The verdict column tells you per-row which approach is
 		worth it on this machine, given the threshold you set for "noticeable."
 	</p>
 
