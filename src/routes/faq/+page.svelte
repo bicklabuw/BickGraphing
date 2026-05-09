@@ -12,26 +12,17 @@
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 
-	const STORAGE_KEY = 'bench-calibration-v1';
 	const WORKER_THRESHOLD_SEC = 20;
 	const FFT_SIZE = 2048;
 	const HOP_SIZE = 1024;
 
-	type Calibration = {
-		savedAt: number;
-		signal: string;
-		workerCount: number;
-		points: { lengthSec: number; mainMs: number; workerMs: number }[];
-	};
-	let calibration: Calibration | null = null;
 	let detectedBrowser = 'your browser';
 
 	onMount(() => {
 		try {
-			const raw = localStorage.getItem(STORAGE_KEY);
-			if (raw) calibration = JSON.parse(raw);
+			localStorage.removeItem('bench-calibration-v1');
 		} catch {
-			calibration = null;
+			// ignore: localStorage may be unavailable (private mode, no storage permissions, etc.)
 		}
 		detectedBrowser = detectBrowser();
 	});
@@ -45,49 +36,6 @@
 		if (ua.includes('Chrome/')) return 'Google Chrome';
 		if (ua.includes('Safari/')) return 'Safari';
 		return 'your browser';
-	}
-
-	function fitLinear(points: [number, number][]): { slope: number; intercept: number } | null {
-		if (points.length < 2) return null;
-		const n = points.length;
-		let sumX = 0,
-			sumY = 0,
-			sumXY = 0,
-			sumXX = 0;
-		for (const [x, y] of points) {
-			sumX += x;
-			sumY += y;
-			sumXY += x * y;
-			sumXX += x * x;
-		}
-		const denom = n * sumXX - sumX * sumX;
-		if (denom === 0) return null;
-		const slope = (n * sumXY - sumX * sumY) / denom;
-		const intercept = (sumY - slope * sumX) / n;
-		return { slope, intercept };
-	}
-
-	$: mainFit = calibration
-		? fitLinear(calibration.points.map((p) => [p.lengthSec, p.mainMs]))
-		: null;
-	$: workerFit = calibration
-		? fitLinear(calibration.points.map((p) => [p.lengthSec, p.workerMs]))
-		: null;
-
-	function predictedMs(lengthSec: number): number | null {
-		const useWorker = lengthSec >= WORKER_THRESHOLD_SEC;
-		const fit = useWorker ? workerFit : mainFit;
-		if (!fit) return null;
-		return Math.max(0, fit.slope * lengthSec + fit.intercept);
-	}
-
-	function formatMs(ms: number | null): string {
-		if (ms === null) return '—';
-		if (ms < 1000) return `${Math.round(ms)} ms`;
-		if (ms < 60000) return `${(ms / 1000).toFixed(2)} s`;
-		const min = Math.floor(ms / 60000);
-		const sec = ((ms % 60000) / 1000).toFixed(0);
-		return `${min} min ${sec} s`;
 	}
 
 	let faqs = [
@@ -155,39 +103,16 @@
 					</p>
 					<p>
 						The number of parallel web workers the tool can spin up depends on what your browser
-						exposes — different browsers (and different machines) report different counts. For
-						example, testing in <strong>{detectedBrowser}</strong>{#if calibration}, it exposes
-							<strong>{calibration.workerCount} parallel web workers</strong>{/if}.
+						exposes — different browsers (and different machines) report different counts. You're
+						currently in <strong>{detectedBrowser}</strong>.
 					</p>
-					{#if calibration}
-						<p>Translated to file lengths, that gives roughly:</p>
-						<ul class="ml-4 list-disc space-y-0.5">
-							<li>
-								10-second clip: <span class="tabular-nums">~{formatMs(predictedMs(10))}</span>
-							</li>
-							<li>1-minute file: <span class="tabular-nums">~{formatMs(predictedMs(60))}</span></li>
-							<li>
-								5-minute file: <span class="tabular-nums">~{formatMs(predictedMs(300))}</span>
-							</li>
-							<li>
-								15-minute file: <span class="tabular-nums">~{formatMs(predictedMs(900))}</span>
-							</li>
-							<li>
-								30-minute file: <span class="tabular-nums">~{formatMs(predictedMs(1800))}</span>
-							</li>
-							<li>
-								45-minute file: <span class="tabular-nums">~{formatMs(predictedMs(2700))}</span>
-							</li>
-						</ul>
-					{:else}
-						<p class="italic text-gray-500">
-							Want estimates calibrated to your machine? Run a sweep on the
-							<a href="{base}/benchmark" class="text-purple-600 underline hover:text-purple-800">
-								benchmark page
-							</a>
-							and these numbers will fill in automatically.
-						</p>
-					{/if}
+					<p class="italic text-gray-500">
+						Want concrete numbers for your machine? Run a sweep on the
+						<a href="{base}/benchmark" class="text-purple-600 underline hover:text-purple-800">
+							benchmark page
+						</a>
+						to see actual timings.
+					</p>
 
 					<details
 						class="group rounded-lg border border-purple-200 bg-purple-50 p-3 open:bg-purple-100"

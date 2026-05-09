@@ -340,10 +340,10 @@
 	// canonical ampRangeMap/timeRangeMap consumed by renderers.
 	$: {
 		for (const audioFile of audioDataArray) {
-			if (!ampValuesMap[audioFile.name]) {
+			if (!ampValuesMap[audioFile.name] && waveformDataMap[audioFile.name]) {
 				ampValuesMap[audioFile.name] = [
-					ampRangeMap[audioFile.name]?.min ?? waveformDataMap[audioFile.name]?.minAmp ?? -0.01,
-					ampRangeMap[audioFile.name]?.max ?? waveformDataMap[audioFile.name]?.maxAmp ?? 0.01
+					ampRangeMap[audioFile.name]?.min ?? waveformDataMap[audioFile.name].minAmp,
+					ampRangeMap[audioFile.name]?.max ?? waveformDataMap[audioFile.name].maxAmp
 				];
 			}
 		}
@@ -461,7 +461,8 @@
 				</div>
 			{/if}
 		</div>
-	{:else}
+	{/if}
+	{#if selectedFiles.length > 0 || !isIngesting}
 		<Filelist {selectedFiles} {audioDurationMap} {removeFile} {removeAllFiles} {handleReorder} />
 	{/if}
 
@@ -474,8 +475,11 @@
 			maxLabel="End Time"
 			minValue={startTime}
 			maxValue={endTime}
-			step={0.1}
 			onChange={handleAllTimeChange}
+			validMin={0}
+			softMaxes={audioDataArray
+				.filter((af) => audioDurationMap[af.name] !== undefined)
+				.map((af) => ({ name: af.name, max: audioDurationMap[af.name] }))}
 		/>
 
 		<Rangeinput
@@ -486,7 +490,6 @@
 			maxLabel="Max Amplitude"
 			minValue={minAmp}
 			maxValue={maxAmp}
-			step={0.00001}
 			onChange={handleAllAmpChange}
 		/>
 
@@ -498,7 +501,8 @@
 			maxLabel="Max Frequency"
 			minValue={minFreq}
 			maxValue={maxFreq}
-			step={10}
+			validMin={0}
+			validMax={NYQUIST_HZ}
 			onChange={handleAllFreqChange}
 		/>
 
@@ -955,7 +959,7 @@
 											max={nyquist}
 											step={10}
 											format={{
-												to: (value: number) => value.toFixed(1),
+												to: (value: number) => Math.round(value).toString(),
 												from: (value: string) => parseFloat(value)
 											}}
 											start={[
