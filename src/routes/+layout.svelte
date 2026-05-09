@@ -17,9 +17,6 @@
 	let pinned = false;
 	let hovered = false;
 	let focused = false;
-	// Latched true after explicit close (X button or trigger toggle-off) so the
-	// popup stays hidden even while the cursor is still over the button. Resets
-	// once the user moves both mouse and focus away.
 	let forceClosed = false;
 
 	$: popupVisible = !forceClosed && (pinned || hovered || focused);
@@ -102,7 +99,6 @@
 	}}
 	role="presentation"
 >
-	<!-- Popup: hover-peek when not pinned, sticky when pinned, hidden when latched. -->
 	<div
 		class="absolute bottom-full right-0 mb-3 w-80 origin-bottom-right transition-all duration-200 {popupVisible
 			? 'pointer-events-auto scale-100 opacity-100'
@@ -140,7 +136,7 @@
 		</div>
 	</div>
 
-	<!-- Trigger button: click toggles pinned, hover still peeks. -->
+	<!-- Trigger button to click and hover over Instruction button. -->
 	<button
 		type="button"
 		on:click={togglePinned}
@@ -160,3 +156,5 @@
 		</span>
 	</button>
 </div>
+
+<!-- You're really diving deep into our code! hope you're enjoying using our tool so far :] -->
