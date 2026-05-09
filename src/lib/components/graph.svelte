@@ -77,8 +77,27 @@
 
 	let waveformRefs: Record<string, Waveform | null> = {};
 	let spectrogramRefs: Record<string, Spectrogram | null> = {};
+	let waveformContainerEls: Record<string, HTMLElement | null> = {};
+	let glowedWaveform: string | null = null;
+	let glowTimer: ReturnType<typeof setTimeout> | null = null;
 	let spectrogramFirstRendered: Record<string, boolean> = {};
 	let openDownloadMenu: string | null = null;
+
+	// Scroll the page to the named waveform and pulse a green glow around it.
+	function focusWaveform(name: string) {
+		const el = waveformContainerEls[name];
+		if (!el) return;
+		el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		// Clear-then-set on next frame so re-clicks restart the animation.
+		if (glowTimer) clearTimeout(glowTimer);
+		glowedWaveform = null;
+		requestAnimationFrame(() => {
+			glowedWaveform = name;
+			glowTimer = setTimeout(() => {
+				if (glowedWaveform === name) glowedWaveform = null;
+			}, 1500);
+		});
+	}
 
 	function handleDownload(name: string, kind: 'wave' | 'spec', format: 'svg' | 'png' | 'jpeg') {
 		if (kind === 'wave') waveformRefs[name]?.downloadWaveform(format);
@@ -220,6 +239,7 @@
 		delete freqValuesMap[name];
 		delete waveformRefs[name];
 		delete spectrogramRefs[name];
+		delete waveformContainerEls[name];
 		delete spectrogramFirstRendered[name];
 		delete waveformHeights[name];
 		delete spectrogramHeights[name];
@@ -491,6 +511,7 @@
 							waveformDataMap[audioFile.name]?.maxAmp ??
 							maxAmp}
 						audioFileName={audioFile.name}
+						on:select={(e) => focusWaveform(e.detail.name)}
 					/>
 				{/key}
 			{/each}
@@ -500,7 +521,11 @@
 	{#if (showWaveform || showSpectrogram) && audioDataArray.length > 0}
 		{#each audioDataArray as audioFile (audioFile.name)}
 			{#if showWaveform}
-				<div class="mt-6 overflow-hidden rounded-lg border bg-gray-100 p-4 shadow">
+				<div
+					bind:this={waveformContainerEls[audioFile.name]}
+					class="mt-6 overflow-hidden rounded-lg border bg-gray-100 p-4 shadow"
+					class:waveform-glow={glowedWaveform === audioFile.name}
+				>
 					<div class="mb-4 flex items-center justify-between">
 						<h3
 							class="animate-fade-in bg-gradient-to-r from-green-800 to-green-500 bg-clip-text text-lg font-bold text-transparent"
@@ -680,17 +705,15 @@
 						{/if}
 					{/key} -->
 					{#key `waveform-${audioFile.inputName}-${waveformVersion}`}
-						<div
-							class={showSliders
-								? 'flex h-full items-stretch gap-8 overflow-hidden'
-								: 'mx-auto items-center'}
-						>
+						<!-- 2026-05-08: time slider returned to the right column so it spans only the
+							 waveform width; the amp column gains the corresponding height via items-stretch.
+							 `pb-12` shortens the slider so its bottom input clears the horizontal time
+							 slider below. The actual scroll-jump fix lives in waveform.svelte (aspect-ratio
+							 on the rendered container). -->
+						<div class={showSliders ? 'flex items-stretch gap-8' : 'mx-auto items-center'}>
 							{#if showSliders}
-								<div
-									class="flex h-full w-32 flex-col"
-									style="flex: 0 0 auto; height: {waveformHeights[audioFile.name] || 400}px"
-								>
-									<div class="flex flex-1 flex-col" style="height: 100%">
+								<div class="flex w-32 flex-col pb-12" style="flex: 0 0 auto">
+									<div class="flex flex-1 flex-col">
 										<Rangeslider
 											title="Amplitude"
 											vertical={true}
@@ -887,17 +910,17 @@
 
 					{#key `spectrogram-${audioFile.inputName}-${spectrogramVersion}`}
 						{@const nyquist = NYQUIST_HZ}
+						<!-- 2026-05-08: time slider returned to the right column so it spans only the
+							 spectrogram width; the freq column gains the corresponding height via items-stretch.
+							 `pb-12` matches the waveform block above. -->
 						<div
 							class={showSliders
-								? 'flex h-full items-stretch gap-8 overflow-hidden'
+								? 'flex items-stretch gap-8'
 								: 'mx-auto flex flex-col items-center'}
 						>
 							{#if showSliders}
-								<div
-									class="flex h-full w-32 flex-col"
-									style="flex: 0 0 auto; height: {spectrogramHeights[audioFile.name] || 400}px"
-								>
-									<div class="flex flex-1 flex-col" style="height: 100%">
+								<div class="flex w-32 flex-col pb-12" style="flex: 0 0 auto">
+									<div class="flex flex-1 flex-col">
 										<Rangeslider
 											title="Frequency"
 											vertical={true}
@@ -985,3 +1008,20 @@
 		{/each}
 	{/if}
 </div>
+
+<style>
+	@keyframes waveform-glow {
+		0% {
+			box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+		}
+		30% {
+			box-shadow: 0 0 16px 4px rgba(34, 197, 94, 0.6);
+		}
+		100% {
+			box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+		}
+	}
+	.waveform-glow {
+		animation: waveform-glow 1.5s ease-out;
+	}
+</style>

@@ -9,10 +9,12 @@
   @license MIT
 -->
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 	import * as d3 from 'd3';
 	// Skip our redraws while the spectrogram is busy. Same rationale as waveform.svelte.
 	import { spectrogramBusy } from '$lib/stores/uiBusy';
+
+	const dispatch = createEventDispatcher<{ select: { name: string } }>();
 
 	/** Pre-decoded `{time, amplitude}` series — already downsampled by the parent. */
 	export let waveformData: { time: number; amplitude: number }[] = [];
@@ -29,7 +31,7 @@
 	export let audioFileName: string = 'UNKNOWN';
 
 	let container: HTMLDivElement;
-	let relative_parent: HTMLDivElement;
+	let relative_parent: HTMLButtonElement;
 	let observer: ResizeObserver | undefined;
 
 	onMount(() => {
@@ -155,11 +157,17 @@
 	}
 </script>
 
-<div bind:this={relative_parent} class="relative rounded border bg-white p-2 shadow-sm">
+<button
+	type="button"
+	bind:this={relative_parent}
+	on:click={() => dispatch('select', { name: audioFileName })}
+	aria-label={`Jump to ${audioFileName} waveform`}
+	class="relative w-full cursor-pointer rounded border bg-white p-2 text-left shadow-sm transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+>
 	<p class="mb-2 whitespace-normal break-words text-center text-xs font-semibold">
 		{audioFileName}
 	</p>
 	<div class="items-center justify-center">
 		<div bind:this={container} class="miniwaveform"></div>
 	</div>
-</div>
+</button>
