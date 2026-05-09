@@ -83,19 +83,32 @@
 	let spectrogramFirstRendered: Record<string, boolean> = {};
 	let openDownloadMenu: string | null = null;
 
-	// Scroll the page to the named waveform and pulse a green glow around it.
+	function smoothScrollTo(targetY: number, duration = 800) {
+		const startY = window.scrollY;
+		const distance = targetY - startY;
+		if (Math.abs(distance) < 1) return;
+		const startTime = performance.now();
+		const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+		function step(now: number) {
+			const t = Math.min((now - startTime) / duration, 1);
+			window.scrollTo(0, startY + distance * ease(t));
+			if (t < 1) requestAnimationFrame(step);
+		}
+		requestAnimationFrame(step);
+	}
+
 	function focusWaveform(name: string) {
 		const el = waveformContainerEls[name];
 		if (!el) return;
-		el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-		// Clear-then-set on next frame so re-clicks restart the animation.
+		const rect = el.getBoundingClientRect();
+		smoothScrollTo(window.scrollY + rect.top - 16);
 		if (glowTimer) clearTimeout(glowTimer);
 		glowedWaveform = null;
 		requestAnimationFrame(() => {
 			glowedWaveform = name;
 			glowTimer = setTimeout(() => {
 				if (glowedWaveform === name) glowedWaveform = null;
-			}, 1500);
+			}, 2500);
 		});
 	}
 
@@ -115,8 +128,8 @@
 
 	let showWaveform = false;
 	let showSpectrogram = false;
-	let showDetails = false;
-	let showSliders = false;
+	let showDetailsMap: Record<string, boolean> = {};
+	let showSlidersMap: Record<string, boolean> = {};
 	let showReset = true;
 	let showDownload = true;
 
@@ -246,6 +259,8 @@
 		delete waveformLoadingMap[name];
 		delete audioBufferMap[name];
 		delete lastExtractedRange[name];
+		delete showDetailsMap[name];
+		delete showSlidersMap[name];
 	}
 
 	function removeFile(name: string) {
@@ -254,8 +269,6 @@
 		if (selectedFiles.length === 0) {
 			showWaveform = false;
 			showSpectrogram = false;
-			showDetails = false;
-			showSliders = false;
 		}
 	}
 
@@ -265,8 +278,6 @@
 		}
 		showWaveform = false;
 		showSpectrogram = false;
-		showDetails = false;
-		showSliders = false;
 	}
 
 	function handleTimeChange(event: CustomEvent<{ values: number[] }>, fileName: string) {
@@ -594,19 +605,25 @@
 								{/if}
 								<Togglebutton
 									label="Details"
-									show={showDetails}
-									onToggle={() => (showDetails = !showDetails)}
+									show={!!showDetailsMap[audioFile.name]}
+									onToggle={() => {
+										showDetailsMap[audioFile.name] = !showDetailsMap[audioFile.name];
+										showDetailsMap = { ...showDetailsMap };
+									}}
 								/>
 								<Togglebutton
 									label="Sliders"
-									show={showSliders}
-									onToggle={() => (showSliders = !showSliders)}
+									show={!!showSlidersMap[audioFile.name]}
+									onToggle={() => {
+										showSlidersMap[audioFile.name] = !showSlidersMap[audioFile.name];
+										showSlidersMap = { ...showSlidersMap };
+									}}
 								/>
 							</div>
 						{/if}
 					</div>
 
-					{#if showDetails}
+					{#if showDetailsMap[audioFile.name]}
 						<div class="mt-2 text-sm text-gray-600">
 							<p class="font-medium text-gray-800">
 								Rendering Details for <span class="font-semibold text-green-700"
@@ -637,7 +654,7 @@
 
 					<div class="flex justify-end gap-2">
 						<!-- Reset button for waveform -->
-						{#if showSliders && showReset}
+						{#if showSlidersMap[audioFile.name] && showReset}
 							<button
 								type="button"
 								aria-label={`Reset waveform amplitude and time range for ${audioFile.name}`}
@@ -676,7 +693,7 @@
 								{scrollY}
 							/>
 						</div>
-						{#if showSliders}
+						{#if showSlidersMap[audioFile.name]}
 							<div class=" px-7">
 								<Rangeslider
 									title="Time"
@@ -710,8 +727,12 @@
 							 `pb-12` shortens the slider so its bottom input clears the horizontal time
 							 slider below. The actual scroll-jump fix lives in waveform.svelte (aspect-ratio
 							 on the rendered container). -->
-						<div class={showSliders ? 'flex items-stretch gap-8' : 'mx-auto items-center'}>
-							{#if showSliders}
+						<div
+							class={showSlidersMap[audioFile.name]
+								? 'flex items-stretch gap-8'
+								: 'mx-auto items-center'}
+						>
+							{#if showSlidersMap[audioFile.name]}
 								<div class="flex w-32 flex-col pb-12" style="flex: 0 0 auto">
 									<div class="flex flex-1 flex-col">
 										<Rangeslider
@@ -736,7 +757,7 @@
 								</div>
 							{/if}
 
-							<div class={showSliders ? 'flex flex-grow flex-col' : 'contents'}>
+							<div class={showSlidersMap[audioFile.name] ? 'flex flex-grow flex-col' : 'contents'}>
 								<Waveform
 									bind:this={waveformRefs[audioFile.name]}
 									bind:computedHeight={waveformHeights[audioFile.name]}
@@ -754,7 +775,7 @@
 									audioDurationSec={audioDurationMap[audioFile.name] ?? 0}
 								/>
 
-								{#if showSliders}
+								{#if showSlidersMap[audioFile.name]}
 									<div class="mt-2 w-full">
 										<Rangeslider
 											title="Time"
@@ -867,19 +888,25 @@
 								{/if}
 								<Togglebutton
 									label="Details"
-									show={showDetails}
-									onToggle={() => (showDetails = !showDetails)}
+									show={!!showDetailsMap[audioFile.name]}
+									onToggle={() => {
+										showDetailsMap[audioFile.name] = !showDetailsMap[audioFile.name];
+										showDetailsMap = { ...showDetailsMap };
+									}}
 								/>
 								<Togglebutton
 									label="Sliders"
-									show={showSliders}
-									onToggle={() => (showSliders = !showSliders)}
+									show={!!showSlidersMap[audioFile.name]}
+									onToggle={() => {
+										showSlidersMap[audioFile.name] = !showSlidersMap[audioFile.name];
+										showSlidersMap = { ...showSlidersMap };
+									}}
 								/>
 							</div>
 						{/if}
 					</div>
 
-					{#if showDetails}
+					{#if showDetailsMap[audioFile.name]}
 						<div class="mt-2 text-sm text-gray-600">
 							<p class="font-medium text-gray-800">
 								Rendering Details for <span class="font-semibold text-green-700"
@@ -914,11 +941,11 @@
 							 spectrogram width; the freq column gains the corresponding height via items-stretch.
 							 `pb-12` matches the waveform block above. -->
 						<div
-							class={showSliders
+							class={showSlidersMap[audioFile.name]
 								? 'flex items-stretch gap-8'
 								: 'mx-auto flex flex-col items-center'}
 						>
-							{#if showSliders}
+							{#if showSlidersMap[audioFile.name]}
 								<div class="flex w-32 flex-col pb-12" style="flex: 0 0 auto">
 									<div class="flex flex-1 flex-col">
 										<Rangeslider
@@ -943,7 +970,11 @@
 								</div>
 							{/if}
 
-							<div class={showSliders ? 'flex min-w-0 flex-grow flex-col' : 'contents'}>
+							<div
+								class={showSlidersMap[audioFile.name]
+									? 'flex min-w-0 flex-grow flex-col'
+									: 'contents'}
+							>
 								<Spectrogram
 									bind:this={spectrogramRefs[audioFile.name]}
 									bind:hasRendered={spectrogramFirstRendered[audioFile.name]}
@@ -958,7 +989,7 @@
 									maxFreq={freqRangeMap[audioFile.name]?.max ?? Math.min(3000, NYQUIST_HZ)}
 								>
 									<svelte:fragment slot="actions">
-										{#if showSliders && showReset}
+										{#if showSlidersMap[audioFile.name] && showReset}
 											<button
 												type="button"
 												aria-label={`Reset spectrogram time and frequency range for ${audioFile.name}`}
@@ -983,7 +1014,7 @@
 									</svelte:fragment>
 								</Spectrogram>
 
-								{#if showSliders}
+								{#if showSlidersMap[audioFile.name]}
 									<div class="mt-2 w-full">
 										<Rangeslider
 											title="Time"
@@ -1022,6 +1053,6 @@
 		}
 	}
 	.waveform-glow {
-		animation: waveform-glow 1.5s ease-out;
+		animation: waveform-glow 2.5s ease-out;
 	}
 </style>
