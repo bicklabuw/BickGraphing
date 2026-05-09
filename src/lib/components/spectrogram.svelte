@@ -28,7 +28,7 @@
 	export let startTime = 0;
 	export let endTime = 15;
 	export let minFreq = 0;
-	export let maxFreq = 5000;
+	export let maxFreq = 3000;
 	export let computedHeight: number = 400;
 
 	let container: HTMLDivElement;

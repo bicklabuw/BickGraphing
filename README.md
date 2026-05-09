@@ -67,6 +67,8 @@ After loading the included `test.wav` file, you should see:
 
 ![Spectrogram view of test.wav](docs/images/spectrogram-output.png)
 
+The frequency slider defaults to 0 to 3000 Hz, the primary band for insect vibrational signals captured by the Insect Eavesdropper sensor. Users can extend the range up to 22050 Hz, the Nyquist limit for 44.1 kHz audio. Content above this is either absent or a resampling artifact, so the slider is hard-capped at that ceiling.
+
 If your output matches the screenshots above, the software is operating correctly.
 
 ## Architecture (4 Layers)
