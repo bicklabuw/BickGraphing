@@ -18,16 +18,20 @@
 		{
 			title: 'Drag & Drop Your Audio',
 			description:
-				'Drop one or more .wav files into the tool. Everything runs locally — no files are uploaded.'
+				'Drop one or more .wav files into the tool. Everything runs locally—no files are uploaded.'
 		},
 		{
 			title: 'Choose Your Visualization',
-			description: 'Pick Waveform, Spectrogram, or both to explore your audio visually.'
+			description:
+				'Pick between waveform, spectrogram, or both to explore your audio data visually.'
 		},
 		{
 			title: 'Adjust Your Settings',
-			description:
-				'Toggle Sliders to fine-tune amplitude and time. Toggle Details to see metadata. Download as SVG when ready.'
+			description: 'Toggle Sliders to fine-tune amplitude, time, and frequency.'
+		},
+		{
+			title: 'Download Your Graph',
+			description: 'Download as .png .jpg .svg files when you are ready.'
 		}
 	];
 </script>
