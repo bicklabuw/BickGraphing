@@ -2,7 +2,7 @@
   @component
   Description: Performance benchmark page — sweeps STFT timings across audio lengths,
   compares main-thread vs web-worker pipelines, renders spectrogram thumbnails per length,
-  and persists per-machine calibration data for the FAQ predictions.
+  and reports per-machine results in a fresh markdown table each run. No data is persisted.
 
   @author K. Seow <kseow@wisc.edu>
   @contributors
@@ -18,11 +18,10 @@
 	const SAMPLE_RATE = 44100;
 	const FFT_SIZE = 2048;
 	const HOP_SIZE = 1024;
-	const STORAGE_KEY = 'bench-calibration-v1';
 	const REFERENCE_LENGTHS = [5, 15, 30, 60, 300, 900, 1800, 2700];
 	const WORKER_THRESHOLD_SEC = 20;
 
-	type Signal = 'sine' | 'noise';
+	type Signal = 'sine' | 'noise' | 'siren';
 	type Result = {
 		lengthSec: number;
 		frames: number;
@@ -91,7 +90,7 @@
 		return canvas.toDataURL('image/png');
 	}
 
-	const DEFAULT_LENGTHS = '0, 5, 15, 20, 25, 30, 60, 120, 300, 1800, 2700';
+	const DEFAULT_LENGTHS = '5, 15, 20, 25, 30, 60, 120, 300, 1800, 2700';
 	let lengthsInput = DEFAULT_LENGTHS;
 
 	function setDefaultLengths() {
@@ -101,7 +100,7 @@
 	function setRandomLengths() {
 		const MAX_SEC = 2700;
 		const targetCount = 8;
-		const set = new Set<number>([0]);
+		const set = new Set<number>();
 		let attempts = 0;
 		while (set.size < targetCount && attempts < 100) {
 			const r = Math.random();
@@ -112,6 +111,9 @@
 		lengthsInput = arr.join(', ');
 	}
 	let signal: Signal = 'sine';
+	let sineFreq = 440;
+	let sirenMinFreq = 200;
+	let sirenMaxFreq = 8000;
 	let workerCount = (typeof navigator !== 'undefined' && navigator.hardwareConcurrency) || 4;
 	let thresholdMs = 500;
 	let running = false;
@@ -128,15 +130,49 @@
 		points: { lengthSec: number; mainMs: number; workerMs: number }[];
 	};
 	let calibration: Calibration | null = null;
+	let machineInfo = '';
 
 	onMount(() => {
 		try {
-			const raw = localStorage.getItem(STORAGE_KEY);
-			if (raw) calibration = JSON.parse(raw);
+			localStorage.removeItem('bench-calibration-v1');
 		} catch {
-			calibration = null;
+			// ignore: localStorage may be unavailable (private mode, no storage permissions, etc.)
 		}
+		machineInfo = describeMachine();
 	});
+
+	function describeMachine(): string {
+		if (typeof navigator === 'undefined') return '';
+		const ua = navigator.userAgent;
+		let browser = 'Unknown browser';
+		const browserMatch =
+			ua.match(/Edg\/(\d+\.\d+)/) ||
+			ua.match(/OPR\/(\d+\.\d+)/) ||
+			ua.match(/Firefox\/(\d+\.\d+)/) ||
+			ua.match(/Chrome\/(\d+\.\d+)/) ||
+			(!ua.includes('Chrome') ? ua.match(/Version\/(\d+\.\d+).*Safari/) : null);
+		if (ua.includes('Edg/')) browser = `Edge ${browserMatch?.[1] ?? ''}`.trim();
+		else if (ua.includes('OPR/') || ua.includes('Opera'))
+			browser = `Opera ${browserMatch?.[1] ?? ''}`.trim();
+		else if (ua.includes('Firefox/')) browser = `Firefox ${browserMatch?.[1] ?? ''}`.trim();
+		else if (ua.includes('Chrome/')) browser = `Chrome ${browserMatch?.[1] ?? ''}`.trim();
+		else if (ua.includes('Safari/')) browser = `Safari ${browserMatch?.[1] ?? ''}`.trim();
+
+		let os = 'Unknown OS';
+		if (ua.includes('Windows NT 10')) os = 'Windows 10/11';
+		else if (ua.includes('Windows')) os = 'Windows';
+		else if (ua.includes('Mac OS X')) os = 'macOS';
+		else if (ua.includes('Android')) os = 'Android';
+		else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+		else if (ua.includes('Linux')) os = 'Linux';
+
+		const parts = [`${browser} on ${os}`];
+		const cores = navigator.hardwareConcurrency;
+		if (cores) parts.push(`${cores} CPU cores`);
+		const memory = (navigator as unknown as { deviceMemory?: number }).deviceMemory;
+		if (memory) parts.push(`${memory} GB RAM`);
+		return parts.join(', ');
+	}
 
 	function fitLinear(points: [number, number][]): { slope: number; intercept: number } | null {
 		if (points.length < 2) return null;
@@ -210,8 +246,17 @@
 		const n = Math.floor(SAMPLE_RATE * durationSec);
 		const out = new Float32Array(n);
 		if (kind === 'sine') {
-			const k = (2 * Math.PI * 440) / SAMPLE_RATE;
+			const k = (2 * Math.PI * sineFreq) / SAMPLE_RATE;
 			for (let i = 0; i < n; i++) out[i] = 0.5 * Math.sin(k * i);
+		} else if (kind === 'siren') {
+			const T = n / SAMPLE_RATE;
+			const fMin = sirenMinFreq;
+			const fDelta = sirenMaxFreq - sirenMinFreq;
+			for (let i = 0; i < n; i++) {
+				const t = i / SAMPLE_RATE;
+				const phase = 2 * Math.PI * (fMin * t + (fDelta * t * t) / (2 * T));
+				out[i] = 0.5 * Math.sin(phase);
+			}
 		} else {
 			for (let i = 0; i < n; i++) out[i] = (Math.random() * 2 - 1) * 0.5;
 		}
@@ -404,12 +449,6 @@
 				workerCount,
 				points: calibPoints
 			};
-			try {
-				localStorage.setItem(STORAGE_KEY, JSON.stringify(calibration));
-				console.log('[bench] calibration saved to localStorage');
-			} catch {
-				console.warn('[bench] could not persist calibration to localStorage');
-			}
 		}
 
 		progress = 'Done.';
@@ -432,8 +471,15 @@
 			(r) =>
 				`| ${r.lengthSec} | ${r.frames} | ${r.mainMs.toFixed(0)} | ${r.workerMs.toFixed(0)} | ${r.savedMs.toFixed(0)} | ${verdict(r)} |`
 		);
-		const meta = `_Signal: ${signal}, Web workers: ${workerCount}, Verdict threshold: ${thresholdMs} ms saved._`;
-		return [meta, '', header, sep, ...rows].join('\n');
+		const machine = machineInfo ? `_Machine: ${machineInfo}._` : '';
+		const sigDesc =
+			signal === 'sine'
+				? `sine (${sineFreq} Hz)`
+				: signal === 'siren'
+					? `siren (${sirenMinFreq} to ${sirenMaxFreq} Hz)`
+					: 'noise';
+		const meta = `_Signal: ${sigDesc}, Web workers: ${workerCount}, Verdict threshold: ${thresholdMs} ms saved._`;
+		return [machine, meta, '', header, sep, ...rows].filter(Boolean).join('\n');
 	}
 
 	async function copyMarkdown() {
@@ -519,7 +565,7 @@
 		</p>
 	</div>
 
-	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+	<div class="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-4">
 		<div class="flex flex-col text-sm">
 			<div class="flex items-center justify-between gap-2">
 				<span class="font-medium">Lengths (sec)</span>
@@ -536,31 +582,36 @@
 						type="button"
 						on:click={setRandomLengths}
 						disabled={running}
-						class="holo-button relative rounded px-2 py-0.5 text-xs font-bold text-white disabled:opacity-50"
+						class="random-shine relative overflow-hidden rounded border border-purple-500 bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700 transition hover:bg-purple-100 disabled:opacity-50"
 					>
-						<span class="sparkle sparkle-1">✨</span>
-						<span class="sparkle sparkle-2">✨</span>
-						<span class="sparkle sparkle-3">✨</span>
-						<span class="sparkle sparkle-4">✨</span>
 						Random
 					</button>
 				</div>
 			</div>
+			<span class="text-xs text-gray-500">
+				Comma- or space-separated audio durations to benchmark. Click Default for a curated set, or
+				Random for a fresh sample.
+			</span>
 			<input
 				type="text"
 				bind:value={lengthsInput}
-				class="mt-1 rounded border border-gray-300 px-2 py-1"
+				class="mt-auto rounded border border-gray-300 px-2 py-1"
 				disabled={running}
 			/>
 		</div>
 		<label class="flex flex-col text-sm">
 			<span class="font-medium">Signal</span>
+			<span class="text-xs text-gray-500">
+				Synthetic input the benchmark generates fresh per run: <code>sine</code> = pure tone,
+				<code>siren</code> = linear frequency sweep, <code>noise</code> = uniform random PCM.
+			</span>
 			<select
 				bind:value={signal}
-				class="mt-1 rounded border border-gray-300 px-2 py-1"
+				class="mt-auto rounded border border-gray-300 px-2 py-1"
 				disabled={running}
 			>
 				<option value="sine">sine</option>
+				<option value="siren">siren</option>
 				<option value="noise">noise</option>
 			</select>
 		</label>
@@ -582,7 +633,7 @@
 				bind:value={workerCount}
 				min="1"
 				max="32"
-				class="mt-1 rounded border border-gray-300 px-2 py-1"
+				class="mt-auto rounded border border-gray-300 px-2 py-1"
 				disabled={running}
 			/>
 		</label>
@@ -596,11 +647,62 @@
 				type="number"
 				bind:value={thresholdMs}
 				min="0"
-				class="mt-1 rounded border border-gray-300 px-2 py-1"
+				class="mt-auto rounded border border-gray-300 px-2 py-1"
 				disabled={running}
 			/>
 		</label>
 	</div>
+
+	{#if signal === 'sine'}
+		<div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
+			<label class="flex items-center gap-2">
+				<span class="font-medium">Sine frequency (Hz)</span>
+				<input
+					type="number"
+					bind:value={sineFreq}
+					min="20"
+					max="22000"
+					step="1"
+					class="w-28 rounded border border-gray-300 px-2 py-1"
+					disabled={running}
+				/>
+			</label>
+			<span class="text-xs text-gray-500">
+				A pure tone at this frequency. Visible as a single horizontal line in the spectrogram.
+			</span>
+		</div>
+	{:else if signal === 'siren'}
+		<div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
+			<label class="flex items-center gap-2">
+				<span class="font-medium">Siren min freq (Hz)</span>
+				<input
+					type="number"
+					bind:value={sirenMinFreq}
+					min="20"
+					max="22000"
+					step="1"
+					class="w-28 rounded border border-gray-300 px-2 py-1"
+					disabled={running}
+				/>
+			</label>
+			<label class="flex items-center gap-2">
+				<span class="font-medium">Siren max freq (Hz)</span>
+				<input
+					type="number"
+					bind:value={sirenMaxFreq}
+					min="20"
+					max="22000"
+					step="1"
+					class="w-28 rounded border border-gray-300 px-2 py-1"
+					disabled={running}
+				/>
+			</label>
+			<span class="text-xs text-gray-500">
+				A linear frequency sweep from min to max over each clip. Visible as a diagonal stripe in the
+				spectrogram, which makes it obvious the audio is generated at runtime.
+			</span>
+		</div>
+	{/if}
 
 	<div class="mt-4 flex items-center gap-3">
 		<button
@@ -613,8 +715,22 @@
 		{#if results.length}
 			<button
 				on:click={copyMarkdown}
-				class="rounded border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50"
+				class="flex items-center gap-1.5 rounded border border-green-500 bg-green-50 px-3 py-2 text-sm font-medium text-green-700 transition hover:bg-green-100"
 			>
+				<svg
+					class="h-4 w-4"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					viewBox="0 0 24 24"
+					aria-hidden="true"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+					/>
+				</svg>
 				Copy as Markdown
 			</button>
 		{/if}
@@ -685,7 +801,11 @@
 		</table>
 
 		<h2 class="mb-2 mt-8 text-lg font-bold">Time vs audio length</h2>
-		<svg width={plotWidth} height={plotHeight} class="rounded border border-gray-200 bg-white">
+		<svg
+			viewBox="0 0 {plotWidth} {plotHeight}"
+			preserveAspectRatio="xMidYMid meet"
+			class="block w-full rounded border border-gray-200 bg-white"
+		>
 			<g transform="translate({plotMargin.left}, {plotMargin.top})">
 				{#each yScale.ticks(5) as tick (tick)}
 					<line
@@ -780,106 +900,82 @@
 			</g>
 		</svg>
 
-		<pre class="mt-4 overflow-auto rounded bg-gray-50 p-3 text-xs">{toMarkdown()}</pre>
+		<h3 class="mb-2 mt-8 text-sm font-medium text-gray-700">Markdown export</h3>
+		<pre class="overflow-auto rounded bg-gray-50 p-3 text-xs">{toMarkdown()}</pre>
+
+		<h3 class="mb-2 mt-4 text-sm font-medium text-gray-700">Rendered preview</h3>
+		<div class="space-y-1 text-xs italic text-gray-600">
+			{#if machineInfo}
+				<p>Machine: {machineInfo}.</p>
+			{/if}
+			<p>
+				Signal: {signal === 'sine'
+					? `sine (${sineFreq} Hz)`
+					: signal === 'siren'
+						? `siren (${sirenMinFreq} to ${sirenMaxFreq} Hz)`
+						: 'noise'}, Web workers: {workerCount}, Verdict threshold: {thresholdMs} ms saved.
+			</p>
+		</div>
+		<table class="mt-2 w-full text-sm">
+			<thead class="bg-gray-100 text-left">
+				<tr>
+					<th class="px-2 py-1">Length (s)</th>
+					<th class="px-2 py-1">Frames</th>
+					<th class="px-2 py-1">Main-thread (ms)</th>
+					<th class="px-2 py-1">Web workers (ms)</th>
+					<th class="px-2 py-1">Saved (ms)</th>
+					<th class="px-2 py-1">Verdict</th>
+				</tr>
+			</thead>
+			<tbody>
+				{#each results as r (r.lengthSec)}
+					<tr class="border-t border-gray-200">
+						<td class="px-2 py-1 tabular-nums">{r.lengthSec}</td>
+						<td class="px-2 py-1 tabular-nums">{r.frames}</td>
+						<td class="px-2 py-1 tabular-nums">{r.mainMs.toFixed(0)}</td>
+						<td class="px-2 py-1 tabular-nums">{r.workerMs.toFixed(0)}</td>
+						<td class="px-2 py-1 tabular-nums">{r.savedMs.toFixed(0)}</td>
+						<td class="px-2 py-1">{verdict(r)}</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
 	{/if}
 </div>
 
 <style>
-	.holo-button {
-		position: relative;
-		background: linear-gradient(
-			90deg,
-			#ff0080,
-			#ff8c00,
-			#ffd700,
-			#00ff80,
-			#00bfff,
-			#8a2be2,
-			#ff0080
-		);
-		background-size: 400% 100%;
-		animation: holo-shimmer 8s linear infinite;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-		box-shadow: 0 0 8px rgba(255, 100, 200, 0.4);
-	}
-	.holo-button::after {
+	.random-shine::after {
 		content: '';
 		position: absolute;
 		inset: 0;
-		border-radius: inherit;
 		background: linear-gradient(
 			110deg,
 			transparent 30%,
-			rgba(255, 255, 255, 0.55) 50%,
+			rgba(255, 255, 255, 0.7) 50%,
 			transparent 70%
 		);
 		background-size: 250% 100%;
-		animation: holo-shine 4s linear infinite;
-		animation-play-state: paused;
-		mix-blend-mode: overlay;
+		background-position: 250% 50%;
 		pointer-events: none;
 		opacity: 0;
-		transition: opacity 0.3s ease;
 	}
-	.holo-button:hover::after {
-		animation-play-state: running;
-		opacity: 1;
+	.random-shine:hover::after {
+		animation: random-shine-sweep 0.9s ease-out forwards;
 	}
-	.holo-button > * {
-		position: relative;
-		z-index: 1;
-	}
-	@keyframes holo-shimmer {
-		from {
-			background-position: 0% 50%;
-		}
-		to {
-			background-position: 400% 50%;
-		}
-	}
-	@keyframes holo-shine {
-		from {
+	@keyframes random-shine-sweep {
+		0% {
 			background-position: 250% 50%;
-		}
-		to {
-			background-position: -50% 50%;
-		}
-	}
-	.sparkle {
-		position: absolute;
-		font-size: 0.6rem;
-		pointer-events: none;
-		animation: sparkle-twinkle 1.6s ease-in-out infinite;
-	}
-	.sparkle-1 {
-		top: -6px;
-		left: -4px;
-		animation-delay: 0s;
-	}
-	.sparkle-2 {
-		top: -6px;
-		right: -4px;
-		animation-delay: 0.4s;
-	}
-	.sparkle-3 {
-		bottom: -6px;
-		left: 30%;
-		animation-delay: 0.8s;
-	}
-	.sparkle-4 {
-		bottom: -6px;
-		right: 8%;
-		animation-delay: 1.2s;
-	}
-	@keyframes sparkle-twinkle {
-		0%,
-		100% {
 			opacity: 0;
-			transform: scale(0.4) rotate(0deg);
 		}
-		50% {
+		15% {
 			opacity: 1;
-			transform: scale(1.3) rotate(180deg);
+		}
+		85% {
+			opacity: 1;
+		}
+		100% {
+			background-position: -50% 50%;
+			opacity: 0;
 		}
 	}
 </style>
