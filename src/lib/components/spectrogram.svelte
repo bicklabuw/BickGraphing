@@ -523,11 +523,8 @@
 		const width = totalWidth - margin.left - margin.right;
 		const height = totalHeight - margin.top - margin.bottom;
 
-		d3.select(container).selectAll('div.spec-plot, svg.spec-overlay').remove();
-
 		const wrapper = d3
-			.select(container)
-			.append('div')
+			.create('div')
 			.attr('class', 'spec-plot')
 			.style('position', 'relative')
 			.style('width', `${totalWidth}px`)
@@ -704,6 +701,9 @@
 			.attr('text-anchor', 'middle')
 			.style('font-size', '10px')
 			.text('Log Intensity');
+
+		// eslint-disable-next-line svelte/no-dom-manipulating -- atomic swap is the flash fix; see commit history
+		container.replaceChildren(wrapper.node()!);
 	}
 </script>
 

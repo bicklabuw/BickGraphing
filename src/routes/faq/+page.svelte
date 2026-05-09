@@ -12,7 +12,6 @@
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 
-	const STORAGE_KEY = 'bench-calibration-v1';
 	const WORKER_THRESHOLD_SEC = 20;
 	const FFT_SIZE = 2048;
 	const HOP_SIZE = 1024;
@@ -36,10 +35,9 @@
 
 	onMount(() => {
 		try {
-			const raw = localStorage.getItem(STORAGE_KEY);
-			if (raw) calibration = JSON.parse(raw);
+			localStorage.removeItem('bench-calibration-v1');
 		} catch {
-			calibration = null;
+			// ignore: localStorage may be unavailable (private mode, no storage permissions, etc.)
 		}
 		detectedBrowser = detectBrowser();
 	});
