@@ -64,12 +64,16 @@
 	let waveformVersion = 0;
 	let spectrogramVersion = 0;
 
+	// Nyquist for 44.1 kHz audio (Insect Eavesdropper standard rate).
+	const NYQUIST_HZ = 22050;
+
 	let startTime = 0;
 	let endTime = 10;
 	let minAmp = -0.01;
 	let maxAmp = 0.01;
 	let minFreq = 0;
-	let maxFreq = 5000;
+	// Primary band for insect vibrational signals; users can extend up to NYQUIST_HZ.
+	let maxFreq = 3000;
 
 	let waveformRefs: Record<string, Waveform | null> = {};
 	let spectrogramRefs: Record<string, Spectrogram | null> = {};
@@ -161,12 +165,11 @@
 				const audioBuffer = await new AudioContext().decodeAudioData(arrayBuffer);
 				audioBufferMap[file.name] = audioBuffer;
 				const duration = audioBuffer.duration;
-				const nyquist = audioBuffer.sampleRate / 2;
 
 				// Seed per-file range defaults.
 				timeRangeMap[file.name] = { start: 0, end: duration };
 				// ampRangeMap[file.name] = { min: minAmp, max: maxAmp };
-				freqRangeMap[file.name] = { min: minFreq, max: Math.min(maxFreq, nyquist) };
+				freqRangeMap[file.name] = { min: minFreq, max: Math.min(maxFreq, NYQUIST_HZ) };
 				audioDurationMap[file.name] = duration;
 
 				// Append to file state.
@@ -883,7 +886,7 @@
 					{/if}
 
 					{#key `spectrogram-${audioFile.inputName}-${spectrogramVersion}`}
-						{@const nyquist = (audioBufferMap[audioFile.name]?.sampleRate ?? 88000) / 2}
+						{@const nyquist = NYQUIST_HZ}
 						<div
 							class={showSliders
 								? 'flex h-full items-stretch gap-8 overflow-hidden'
@@ -907,7 +910,7 @@
 											}}
 											start={[
 												freqRangeMap[audioFile.name]?.min ?? 0,
-												freqRangeMap[audioFile.name]?.max ?? Math.min(5000, nyquist)
+												freqRangeMap[audioFile.name]?.max ?? Math.min(3000, nyquist)
 											]}
 											bind:values={freqValuesMap[audioFile.name]}
 											on:change={(e) => handleFreqChange(e, audioFile.name)}
@@ -929,8 +932,7 @@
 									startTime={timeRangeMap[audioFile.name]?.start ?? 0}
 									endTime={timeRangeMap[audioFile.name]?.end ?? 10}
 									minFreq={freqRangeMap[audioFile.name]?.min ?? 0}
-									maxFreq={freqRangeMap[audioFile.name]?.max ??
-										Math.min(5000, (audioBufferMap[audioFile.name]?.sampleRate ?? 88000) / 2)}
+									maxFreq={freqRangeMap[audioFile.name]?.max ?? Math.min(3000, NYQUIST_HZ)}
 								>
 									<svelte:fragment slot="actions">
 										{#if showSliders && showReset}
