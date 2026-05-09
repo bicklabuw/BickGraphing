@@ -291,5 +291,10 @@
 		</div>
 	</div>
 {:else}
+	<!-- aspect-ratio holds the container's height during the html('')→append-SVG cycle in
+		 createWaveform, so the page doesn't collapse-then-restore on every drag tick.
+		 Previous markup (kept for JORS traceability):
 	<div bind:this={container} class="waveform"></div>
+	-->
+	<div bind:this={container} class="waveform w-full" style="aspect-ratio: 21 / 9;"></div>
 {/if}
