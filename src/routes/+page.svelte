@@ -25,8 +25,11 @@
 		},
 		{
 			title: 'Adjust Your Settings',
-			description:
-				'Use sliders to control amplitude, zoom, and color scale. Tailor the graph to highlight what matters.'
+			description: 'Toggle Sliders to fine-tune amplitude, time, and frequency.'
+		},
+		{
+			title: 'Download Your Graph',
+			description: 'Download as .png .jpg .svg files when you are ready.'
 		}
 	];
 </script>

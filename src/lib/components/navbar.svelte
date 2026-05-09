@@ -62,6 +62,12 @@
 			>
 				FAQ
 			</a>
+			<a
+				href="{base}/benchmark"
+				class="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:text-purple-600"
+			>
+				Benchmark
+			</a>
 
 			<!-- External Links -->
 			<!-- { label: 'Bick Portal', href: 'https://connect.doit.wisc.edu/bickportal/' } -->

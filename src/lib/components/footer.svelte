@@ -41,7 +41,7 @@
 			<p class="font-semibold text-gray-800">Bick Graphing</p>
 			<p>&copy; {new Date().getFullYear()} Bick Lab, University of Wisconsin–Madison</p>
 			<p class="mt-1 text-xs text-gray-500">
-				Version 0.2.0 &mdash; Designed by <a
+				Version 0.2.0 &mdash; Updated by <a
 					href="https://github.com/kayleyseow"
 					target="_blank"
 					rel="noopener noreferrer"
@@ -53,8 +53,17 @@
 					href="https://ie-graphing-709865.pages.doit.wisc.edu"
 					target="_blank"
 					rel="noopener noreferrer"
-					class="transition hover:text-green-600">Version 0.1.0</a
+					class="transition hover:text-green-600"
 				>
+					Version 0.1.0
+				</a>
+				&mdash; Designed by
+				<a
+					href="https://www.gracesteinmetz.com"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="transition hover:text-green-600">G. Steinmetz</a
+				> & A. Arovas
 			</p>
 		</div>
 
