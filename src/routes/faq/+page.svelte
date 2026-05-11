@@ -159,6 +159,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>FAQ | BickGraphing</title>
+</svelte:head>
+
 <section class="min-h-screen px-3 py-7 text-gray-900">
 	<div class="mx-auto max-w-3xl">
 		<h1 class="mb-12 text-center text-4xl font-bold text-gray-900">Frequently Asked Questions</h1>

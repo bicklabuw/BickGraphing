@@ -36,6 +36,10 @@
 	];
 </script>
 
+<svelte:head>
+	<title>BickGraphing</title>
+</svelte:head>
+
 <section class="px-6 py-16 text-gray-800">
 	<div class="mx-auto flex max-w-4xl flex-col items-center text-center">
 		<img src={asset('/bicklab_logo.png')} alt="BickLab Logo" class="mb-6 h-auto w-40" />

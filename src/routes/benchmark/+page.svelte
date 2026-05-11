@@ -527,6 +527,10 @@
 		.y((r) => yScale(r.workerMs))(results);
 </script>
 
+<svelte:head>
+	<title>Benchmark | BickGraphing</title>
+</svelte:head>
+
 <div class="mx-auto max-w-4xl p-6">
 	<h1 class="mb-2 text-2xl font-bold">STFT benchmark: main-thread vs web workers</h1>
 	<p class="mb-3 text-sm text-gray-600">

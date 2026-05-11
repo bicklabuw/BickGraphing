@@ -12,4 +12,8 @@
 	import Graph from '$lib/components/graph.svelte';
 </script>
 
+<svelte:head>
+	<title>Graphing | BickGraphing</title>
+</svelte:head>
+
 <Graph />
