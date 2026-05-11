@@ -514,7 +514,7 @@
 	function drawSpectrogram(data: number[][], sampleRate: number) {
 		if (!data.length || !data[0].length || !container) return;
 
-		const margin = { top: 20, right: 60, bottom: 24, left: 44 };
+		const margin = { top: 20, right: 75, bottom: 24, left: 55 };
 		const aspectRatio = 21 / 9;
 		const measured = container.getBoundingClientRect().width;
 		const totalWidth = Math.max(300, Math.round(measured));
@@ -651,7 +651,7 @@
 			.append('text')
 			.attr('transform', 'rotate(-90)')
 			.attr('x', -height / 2)
-			.attr('y', -32)
+			.attr('y', -38)
 			.attr('fill', '#000')
 			.attr('font-size', '10px')
 			.style('text-anchor', 'middle')

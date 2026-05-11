@@ -165,7 +165,7 @@
 	function createWaveform() {
 		d3.select(container).html('');
 
-		const margin = { top: 20, right: 40, bottom: 24, left: 58 };
+		const margin = { top: 20, right: 40, bottom: 24, left: 60 };
 		const maxRect = container.getBoundingClientRect();
 		const aspectRatio = 21 / 9; // 16:9 aspect ratio
 		const height = maxRect.width / aspectRatio;
@@ -240,7 +240,7 @@
 			.append('text')
 			.attr('transform', 'rotate(-90)')
 			.attr('x', -innerHeight / 2)
-			.attr('y', -32)
+			.attr('y', -45)
 			.attr('fill', '#000')
 			.attr('font-size', '10px')
 			.style('text-anchor', 'middle')
