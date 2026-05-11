@@ -49,7 +49,7 @@
 	const aboutItems = [
 		{
 			question: 'Is this tool free to use?',
-			answer: 'Yes. Bick Graphing is completely free and runs entirely in your browser.'
+			answer: 'Yes. BickGraphing is completely free and runs entirely in your browser.'
 		},
 		{
 			question: 'Can I use this offline?',
@@ -59,25 +59,25 @@
 		{
 			question: 'What browsers are supported?',
 			answer:
-				'Bick Graphing works in any modern browser that supports the Web Audio API: Chrome, Firefox, Safari, and Edge. Chromium-based browsers (Chrome, Edge, Opera) handle the longest files best; see the Troubleshooting section if you load files over an hour.'
+				'BickGraphing works in any modern browser that supports the Web Audio API: Chrome, Firefox, Safari, and Edge. Chromium-based browsers (Chrome, Edge, Opera) handle the longest files best; see the Troubleshooting section if you load files over an hour.'
 		},
 		{
 			question: 'What kinds of recordings is this designed for?',
-			answer: `Bick Graphing was originally built to support insect bioacoustics research as part of the <a href="https://www.insecteavesdropper.com/home" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">Insect Eavesdropper</a> project, but it works for any .wav recording you'd like to inspect visually.`
+			answer: `BickGraphing was originally built to support insect bioacoustics research as part of the <a href="https://www.insecteavesdropper.com/home" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">Insect Eavesdropper</a> project, but it works for any .wav recording you'd like to inspect visually.`
 		},
 		{
 			question: 'Is the source code available?',
-			answer: `Yes! Bick Graphing is open source under the <a href="https://github.com/bicklabuw/BickGraphing/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">MIT license</a>. You can browse the source, file issues, or contribute on <a href="https://github.com/bicklabuw/BickGraphing" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">GitHub</a>.`
+			answer: `Yes! BickGraphing is open source under the <a href="https://github.com/bicklabuw/BickGraphing/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">MIT license</a>. You can browse the source, file issues, or contribute on <a href="https://github.com/bicklabuw/BickGraphing" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">GitHub</a>.`
 		},
 		{
-			question: 'Where can I find the original version of Bick Graphing?',
+			question: 'Where can I find the original version of BickGraphing?',
 			answer: `The original v0.1.0 was designed by Grace Steinmetz and Alex Arovas, and is still hosted on UW–Madison's GitLab Pages at <a href="https://ie-graphing-709865.pages.doit.wisc.edu" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">https://ie-graphing-709865.pages.doit.wisc.edu</a>.`
 		}
 	];
 
 	const usingItems = [
 		{
-			question: 'How do I use Bick Graphing?',
+			question: 'How do I use BickGraphing?',
 			answer: `Open the <a href="${base}/graphing" class="text-purple-600 underline hover:text-purple-800">Graphing Tool</a> and drop one or more .wav files anywhere on the page; everything stays local and nothing uploads. Pick a view: Waveform, Spectrogram, or both. Toggle <strong>Sliders</strong> to fine-tune amplitude, time, and frequency ranges. Toggle <strong>Details</strong> to see per-file metadata. Click any mini-waveform thumbnail to jump to that file's full graph. Use the <strong>Download</strong> button on any chart to save as SVG, PNG, or JPEG.`
 		},
 		{
@@ -111,15 +111,15 @@
 			answer: `We've written a preprint that goes into the design and motivation in more detail. You can read it on <a href="https://arxiv.org/abs/2601.17014" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">arXiv</a>.`
 		},
 		{
-			question: 'How should I cite Bick Graphing in my research?',
-			answer: `If you end up using Bick Graphing in academic work, please cite our <a href="https://arxiv.org/abs/2601.17014" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">arXiv preprint</a>:<blockquote class="my-3 border-l-4 border-purple-300 bg-gray-50 px-4 py-2 text-xs italic text-gray-700">Seow, K., Arovas, A., Steinmetz, G., &amp; Bick, E. (2026). <em>BickGraphing: Web-Based Application for Visual Inspection of Audio Recordings</em>. arXiv:2601.17014 [eess.AS]. <a href="https://arxiv.org/abs/2601.17014" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">https://arxiv.org/abs/2601.17014</a></blockquote>The repository's <a href="https://github.com/bicklabuw/BickGraphing#readme" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">README</a> includes a ready-to-paste BibTeX entry, and a <a href="https://github.com/bicklabuw/BickGraphing/blob/main/CITATION.cff" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800"><code class="rounded bg-gray-100 px-1 py-0.5 text-xs">CITATION.cff</code></a> file is available for citation managers.`
+			question: 'How should I cite BickGraphing in my research?',
+			answer: `If you end up using BickGraphing in academic work, please cite our <a href="https://arxiv.org/abs/2601.17014" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">arXiv preprint</a>:<blockquote class="my-3 border-l-4 border-purple-300 bg-gray-50 px-4 py-2 text-xs italic text-gray-700">Seow, K., Arovas, A., Steinmetz, G., &amp; Bick, E. (2026). <em>BickGraphing: Web-Based Application for Visual Inspection of Audio Recordings</em>. arXiv:2601.17014 [eess.AS]. <a href="https://arxiv.org/abs/2601.17014" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">https://arxiv.org/abs/2601.17014</a></blockquote>The repository's <a href="https://github.com/bicklabuw/BickGraphing#readme" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">README</a> includes a ready-to-paste BibTeX entry, and a <a href="https://github.com/bicklabuw/BickGraphing/blob/main/CITATION.cff" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800"><code class="rounded bg-gray-100 px-1 py-0.5 text-xs">CITATION.cff</code></a> file is available for citation managers.`
 		}
 	];
 
 	const troubleshootingItems = [
 		{
 			question: "Why won't my .mp3, .flac, or .ogg file load?",
-			answer: `Bick Graphing only supports .wav for now; other formats are rejected at ingest. To use a different audio file, convert it to .wav first using a free tool like <a href="https://www.audacityteam.org/" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">Audacity</a> or <a href="https://ffmpeg.org/" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">FFmpeg</a>.`
+			answer: `BickGraphing only supports .wav for now; other formats are rejected at ingest. To use a different audio file, convert it to .wav first using a free tool like <a href="https://www.audacityteam.org/" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">Audacity</a> or <a href="https://ffmpeg.org/" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline hover:text-purple-800">FFmpeg</a>.`
 		},
 		{
 			question: 'My file is over an hour long. What happens?',
@@ -163,7 +163,7 @@
 	<div class="mx-auto max-w-3xl">
 		<h1 class="mb-12 text-center text-4xl font-bold text-gray-900">Frequently Asked Questions</h1>
 
-		<h2 class="mb-6 text-2xl font-bold text-gray-900">About Bick Graphing</h2>
+		<h2 class="mb-6 text-2xl font-bold text-gray-900">About BickGraphing</h2>
 		<div class="mb-12 space-y-6">
 			{#each aboutItems as faq (faq.question)}
 				<div class="rounded-xl bg-white p-6 shadow-md transition hover:shadow-lg">
@@ -182,7 +182,7 @@
 					aria-controls="using-content"
 					class="flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl border border-purple-200 bg-white p-6 shadow-md transition hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
 				>
-					<span class="text-2xl font-bold text-gray-900">Using Bick Graphing</span>
+					<span class="text-2xl font-bold text-gray-900">Using BickGraphing</span>
 					<span
 						aria-hidden="true"
 						class="text-2xl text-purple-600 transition-transform"

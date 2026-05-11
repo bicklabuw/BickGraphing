@@ -38,7 +38,7 @@
 		class="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 md:flex-row"
 	>
 		<div class="text-center md:text-left">
-			<p class="font-semibold text-gray-800">Bick Graphing</p>
+			<p class="font-semibold text-gray-800">BickGraphing</p>
 			<p>&copy; {new Date().getFullYear()} Bick Lab, University of Wisconsin–Madison</p>
 			<p class="mt-1 text-xs text-gray-500">
 				Version 0.2.0 &mdash; By <a

@@ -41,7 +41,7 @@
 		<img src={asset('/bicklab_logo.png')} alt="BickLab Logo" class="mb-6 h-auto w-40" />
 
 		<h1 class="mb-4 text-4xl font-bold tracking-tight md:text-5xl">
-			Welcome to <span class="text-purple-400">Bick Graphing</span>
+			Welcome to <span class="text-purple-400">BickGraphing</span>
 		</h1>
 
 		<p class="mb-10 text-lg text-gray-600 md:text-xl">
@@ -90,7 +90,7 @@
 
 <section class=" px-6 py-14 text-gray-800">
 	<div class="mx-auto max-w-5xl text-center">
-		<h2 class="mb-12 text-3xl font-bold text-gray-900">Why Use Bick Graphing?</h2>
+		<h2 class="mb-12 text-3xl font-bold text-gray-900">Why Use BickGraphing?</h2>
 		<div class="grid grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
 			<div
 				class="flex flex-col items-center rounded-xl bg-white p-6 shadow-md transition hover:shadow-lg"
@@ -144,7 +144,7 @@
 					Is this tool free to use?
 				</h3>
 				<p class="mt-2 text-sm text-gray-600">
-					Yes, Bick Graphing is completely free and runs entirely in your browser.
+					Yes, BickGraphing is completely free and runs entirely in your browser.
 				</p>
 			</div>
 

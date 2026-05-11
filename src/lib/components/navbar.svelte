@@ -38,7 +38,7 @@
 		<a href="{base}/" class="flex items-center gap-3">
 			<img src={asset('/bicklab_logo.png')} alt="BickLab Logo" class="h-8 w-auto" />
 			<span class="font-bugslife text-lg font-semibold tracking-tight text-gray-800">
-				Bick Graphing
+				BickGraphing
 			</span>
 		</a>
 
