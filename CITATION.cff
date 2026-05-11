@@ -6,7 +6,8 @@ license: MIT
 repository-code: 'https://github.com/bicklabuw/BickGraphing'
 url: 'https://bicklabuw.github.io/BickGraphing/'
 version: 0.2.0
-date-released: '2026-01-14'
+doi: 10.5281/zenodo.19381867
+date-released: '2026-05-10'
 keywords:
   - audio analysis
   - spectrogram

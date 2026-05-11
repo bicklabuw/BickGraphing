@@ -29,7 +29,7 @@ When reporting a bug, please include:
 
 ## Getting set up locally
 
-The full local setup, build, and deploy instructions live in the [README](README.md#local-setup). The short version:
+The full local setup, build, and deploy instructions live in the [README](../README.md#local-setup). The short version:
 
 ```bash
 npm install
@@ -75,7 +75,7 @@ pip install -r tests/requirements.txt
 npm run test:fixtures
 ```
 
-See [`tests/README.md`](tests/README.md) for full details on test categories, parameters, and how to extend the suite.
+See [`tests/README.md`](../tests/README.md) for full details on test categories, parameters, and how to extend the suite.
 
 ## Code style
 

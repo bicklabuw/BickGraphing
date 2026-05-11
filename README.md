@@ -6,6 +6,8 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2601.17014-b31b1b.svg)](https://arxiv.org/abs/2601.17014)
 [![MIT License](https://img.shields.io/github/license/bicklabuw/BickGraphing)](LICENSE)
 
+**[Contributors](https://github.com/bicklabuw/BickGraphing/graphs/contributors):** K. Seow ([kayleyseow](https://github.com/kayleyseow), v2), Grace Steinmetz ([ClearCrystals](https://github.com/ClearCrystals), [Clear-Crystals](https://github.com/Clear-Crystals), v1) & Alex Arovas ([Alex-Arovas](https://github.com/Alex-Arovas), v1).
+
 **Browser-based audio visualization tool** for rapid inspection of `.wav` recordings. Drag-and-drop waveforms and spectrograms, runs entirely client-side, no server, no uploads.
 
 [Open the live demo](https://bicklabuw.github.io/BickGraphing/) · [Try the graphing tool](https://bicklabuw.github.io/BickGraphing/graphing) · [Read the FAQ](https://bicklabuw.github.io/BickGraphing/faq) · [Run the benchmark](https://bicklabuw.github.io/BickGraphing/benchmark)
