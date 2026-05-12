@@ -10,7 +10,9 @@
 -->
 <script lang="ts">
 	import '../app.css';
-	import { asset } from '$app/paths';
+	import { onMount, onDestroy } from 'svelte';
+	import { asset, base } from '$app/paths';
+	import { page } from '$app/stores';
 	import Navbar from '$lib/components/navbar.svelte';
 	import Footer from '$lib/components/footer.svelte';
 
@@ -20,6 +22,43 @@
 	let forceClosed = false;
 
 	$: popupVisible = !forceClosed && (pinned || hovered || focused);
+	$: onGraphing = $page.url.pathname.replace(/\/$/, '').endsWith('/graphing');
+
+	let showScrollTop = false;
+	let bottomOffset = 16;
+	let onScroll: (() => void) | undefined;
+
+	function scrollToTop() {
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	}
+
+	function recomputeBottomOffset() {
+		const footer = document.querySelector('footer');
+		if (!footer) {
+			bottomOffset = 16;
+			return;
+		}
+		const rect = footer.getBoundingClientRect();
+		const overlap = window.innerHeight - rect.top;
+		bottomOffset = overlap > 0 ? overlap + 16 : 16;
+	}
+
+	onMount(() => {
+		onScroll = () => {
+			showScrollTop = window.scrollY > 300;
+			recomputeBottomOffset();
+		};
+		window.addEventListener('scroll', onScroll, { passive: true });
+		window.addEventListener('resize', onScroll);
+		onScroll();
+	});
+
+	onDestroy(() => {
+		if (typeof window !== 'undefined' && onScroll) {
+			window.removeEventListener('scroll', onScroll);
+			window.removeEventListener('resize', onScroll);
+		}
+	});
 
 	function closePopup() {
 		pinned = false;
@@ -86,7 +125,8 @@
 </div>
 
 <div
-	class="group fixed bottom-4 right-4 z-50"
+	class="group fixed right-4 z-50"
+	style="bottom: {bottomOffset}px"
 	on:mouseenter={() => (hovered = true)}
 	on:mouseleave={() => {
 		hovered = false;
@@ -100,7 +140,7 @@
 	role="presentation"
 >
 	<div
-		class="absolute bottom-full right-0 mb-3 w-80 origin-bottom-right transition-all duration-200 {popupVisible
+		class="absolute bottom-full right-0 mb-3 w-80 origin-bottom-right transition-all duration-75 {popupVisible
 			? 'pointer-events-auto scale-100 opacity-100'
 			: 'pointer-events-none scale-95 opacity-0'}"
 	>
@@ -133,6 +173,12 @@
 					</div>
 				{/each}
 			</div>
+			<div class="mt-4 border-t border-gray-200 pt-3 text-xs text-gray-600">
+				More questions? See the
+				<a href="{base}/faq" class="font-medium text-purple-600 underline hover:text-purple-800">
+					FAQ
+				</a>.
+			</div>
 		</div>
 	</div>
 
@@ -142,19 +188,39 @@
 		on:click={togglePinned}
 		aria-label={pinned ? 'Hide graphing instructions' : 'Show graphing instructions'}
 		aria-expanded={pinned}
-		class="flex items-center rounded-full bg-white/70 px-3 py-1.5 shadow-lg backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-purple-400"
+		class="flex items-center rounded-full bg-white/70 px-4 py-2 shadow-lg backdrop-blur-md transition-all duration-75 hover:scale-105 hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-purple-400"
 	>
 		<div class="flex h-5 w-5 items-center justify-center">
 			<img
 				src={asset('/icons/info.svg')}
 				alt=""
-				class="h-4 w-4 opacity-70 transition group-hover:opacity-100"
+				class="h-5 w-5 opacity-70 transition group-hover:opacity-100"
 			/>
 		</div>
-		<span class="ml-2 whitespace-nowrap text-xs font-medium text-gray-700">
-			{pinned ? 'Hide' : 'Instructions'}
+		<span class="ml-2 whitespace-nowrap text-sm font-medium text-gray-700">
+			{pinned ? 'Hide Instructions' : 'Instructions'}
 		</span>
 	</button>
 </div>
+
+{#if onGraphing}
+	<button
+		type="button"
+		on:click={scrollToTop}
+		aria-label="Scroll to top of page"
+		aria-hidden={!showScrollTop}
+		tabindex={showScrollTop ? 0 : -1}
+		style="bottom: {bottomOffset}px"
+		class="fixed left-1/2 z-50 flex -translate-x-1/2 items-center rounded-full bg-white/70 px-4 py-2 shadow-lg backdrop-blur-md transition-all duration-75 hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-purple-400 {showScrollTop
+			? 'pointer-events-auto opacity-100'
+			: 'pointer-events-none opacity-0'}"
+	>
+		<span
+			class="flex h-5 w-5 items-center justify-center text-base leading-none text-gray-700"
+			aria-hidden="true">↑</span
+		>
+		<span class="ml-2 whitespace-nowrap text-sm font-medium text-gray-700">Top of Page</span>
+	</button>
+{/if}
 
 <!-- You're really diving deep into our code! hope you're enjoying using our tool so far :] -->

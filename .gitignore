@@ -28,7 +28,6 @@ vite.config.ts.timestamp-*
 
 # Personal
 /Paper/
-output.png
 .claude/
 src/lib/components/original_spectrogram.svelte
 
