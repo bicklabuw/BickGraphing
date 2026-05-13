@@ -1,4 +1,18 @@
 /**
+ * @file Downsampled time/amplitude extraction from an AudioBuffer for plotting.
+ *
+ * Single-purpose utility used by waveform.svelte and miniwaveform.svelte.
+ * Extracted from the waveform components on 2026-05-03 so the data-reduction
+ * step can be exercised in isolation by `waveformData.unit.test.ts` and
+ * `waveformData.integration.test.ts`.
+ *
+ * @author K. Seow <kseow@wisc.edu>
+ * @created 2026-05-03
+ * @version 0.2.0
+ * @license MIT
+ */
+
+/**
  * Reduces a slice `[start, end]` of an `AudioBuffer` to a plot-friendly
  * `{time, amplitude}` series and reports the sample's amplitude extent.
  *

@@ -1,12 +1,11 @@
 /**
- * @module
- * Description: STFT worker — computes log-magnitudes for an assigned range of
- * frames and returns them as a single flat Float32Array. Each frame's FFT is
- * independent, so spectrogram.svelte can run several of these in parallel
- * across `navigator.hardwareConcurrency` cores.
+ * @file STFT worker that computes log-magnitudes for an assigned range of
+ * frames and returns them as a single flat Float32Array.
+ *
+ * Each frame's FFT is independent, so spectrogram.svelte can run several of
+ * these in parallel across `navigator.hardwareConcurrency` cores.
  *
  * @author K. Seow <kseow@wisc.edu>
- * @contributors
  * @created 2026-05-05
  * @version 0.2.0
  * @license MIT
