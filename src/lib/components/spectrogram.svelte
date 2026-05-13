@@ -245,6 +245,10 @@
 		}, wait);
 	}
 
+	export function refresh() {
+		kickoffGeneration();
+	}
+
 	$: if (ffmpeg && inputFileName) {
 		if (
 			startTime !== lastStart ||

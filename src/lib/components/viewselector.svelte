@@ -141,6 +141,8 @@
 				</span>
 			</span>
 		</label>
+
+		<slot />
 	</div>
 </div>
 

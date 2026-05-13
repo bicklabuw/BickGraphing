@@ -96,6 +96,11 @@
 			description: 'Sliders for amplitude, time, and frequency. Details for per-file metadata.'
 		},
 		{
+			title: 'Auto-update Spectrogram',
+			description:
+				'Off zooms into the cached spectrogram (near-instant). On recomputes for full detail; leave on for downloads.'
+		},
+		{
 			title: 'Click a mini waveform thumbnail',
 			description: 'Jumps the page to that file’s full waveform.'
 		},

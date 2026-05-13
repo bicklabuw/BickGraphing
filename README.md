@@ -1,16 +1,16 @@
 # BickGraphing
 
-[![Svelte](https://img.shields.io/badge/svelte-%23f23f55.svg?style=for-the-badge&logo=svelte&logoColor=white)](https://svelte.dev)
-[![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![DOI](https://zenodo.org/badge/1134403659.svg)](https://doi.org/10.5281/zenodo.19381867)
+[![Svelte](https://img.shields.io/badge/svelte-%23f23f55.svg?logo=svelte&logoColor=white)](https://svelte.dev)
+[![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19381867-blue.svg)](https://doi.org/10.5281/zenodo.19381867)
 [![arXiv](https://img.shields.io/badge/arXiv-2601.17014-b31b1b.svg)](https://arxiv.org/abs/2601.17014)
 [![MIT License](https://img.shields.io/github/license/bicklabuw/BickGraphing)](LICENSE)
 
-**[Contributors](https://github.com/bicklabuw/BickGraphing/graphs/contributors):** K. Seow ([kayleyseow](https://github.com/kayleyseow), v2), Grace Steinmetz ([ClearCrystals](https://github.com/ClearCrystals), [Clear-Crystals](https://github.com/Clear-Crystals), v1) & Alex Arovas ([Alex-Arovas](https://github.com/Alex-Arovas), v1).
-
 **Browser-based audio visualization tool** for rapid inspection of `.wav` recordings. Drag-and-drop waveforms and spectrograms, runs entirely client-side, no server, no uploads.
 
-[Open the live demo](https://bicklabuw.github.io/BickGraphing/) · [Try the graphing tool](https://bicklabuw.github.io/BickGraphing/graphing) · [Read the FAQ](https://bicklabuw.github.io/BickGraphing/faq) · [Run the benchmark](https://bicklabuw.github.io/BickGraphing/benchmark)
+**[Contributors](https://github.com/bicklabuw/BickGraphing/graphs/contributors):** K. Seow ([kayleyseow](https://github.com/kayleyseow), v2), Grace Steinmetz ([ClearCrystals](https://github.com/ClearCrystals), [Clear-Crystals](https://github.com/Clear-Crystals), v1) & Alex Arovas ([Alex-Arovas](https://github.com/Alex-Arovas), v1).
+
+[Live demo](https://bicklabuw.github.io/BickGraphing/) · [Graphing tool](https://bicklabuw.github.io/BickGraphing/graphing) · [Read the FAQ](https://bicklabuw.github.io/BickGraphing/faq) · [Run the benchmark](https://bicklabuw.github.io/BickGraphing/benchmark)
 
 ## Contents
 
@@ -29,10 +29,11 @@
 ## Features
 
 - **Multi-file uploads** with a reorderable file list and click-to-scroll mini-waveform thumbnails.
-- **Per-file controls.** Each file has its own Show Details, Show Sliders, Reset, and Download menu.
+- **Per-file controls.** Each file has its own Show Details, Show Sliders, Refresh Graph, Reset, and Download menu.
 - **Dual visualization.** Synchronized waveform (D3 line plot) and spectrogram (canvas heatmap with the Turbo colormap) over the same time window.
 - **Interactive sliders** for amplitude, frequency, and time, with file-aware validation that warns when an end time exceeds individual file durations.
-- **Hours-long audio support** with web-worker parallel STFT for long files.
+- **Spectrogram zoom mode.** Toggle Auto-update off to zoom into the cached spectrogram instantly; click Refresh Graph to recompute the STFT at the current view bounds. [More in the FAQ](https://bicklabuw.github.io/BickGraphing/faq#what-does-the-auto-update-spectrogram-toggle-do).
+- **Hours-long audio support** with web-worker parallel STFT for long files. Practical input caps near 90 minutes because of the browser's built-in `decodeAudioData` memory limit; files over 1 hour are flagged with a "Long file" badge in the file list so users see the warning before processing starts.
 - **Export** as SVG, PNG, or JPEG straight from the panel.
 - **Offline first, no persistent storage.** Nothing is uploaded; nothing is saved to localStorage or cookies.
 
@@ -43,7 +44,7 @@ Built for **insect bioacoustics research**, originally to support rapid quality 
 Design constraints:
 
 - Works offline in the field, no internet required.
-- Handles hours-long recordings on consumer hardware (~500 MB peak memory on typical fixtures).
+- Handles hours-long recordings on consumer hardware.
 - Drag, adjust sliders, export. No CLI, no setup.
 
 ## Usage
@@ -53,7 +54,7 @@ Design constraints:
 3. Pick a visualization (**Waveform**, **Spectrogram**, or both) via the View Selector at the top.
 4. Inside each file's panel:
    - **Show/Hide Details** toggles rendering metadata.
-   - **Show/Hide Sliders** reveals interactive controls (amplitude/frequency, time, numeric inputs, Reset).
+   - **Show/Hide Sliders** reveals interactive controls (amplitude/frequency, time, numeric inputs, Reset, and Refresh Graph when [Auto-update Spectrogram](https://bicklabuw.github.io/BickGraphing/faq#what-does-the-auto-update-spectrogram-toggle-do) is off).
    - **Download** exports the panel as SVG, PNG, or JPEG.
 5. The global Time/Amplitude/Frequency inputs at the top apply across all files at once, with validation: invalid values are blocked with a red alert; end times that exceed at least one file's duration trigger an amber soft warning.
 6. Click a mini-waveform thumbnail along the top row to smoothly scroll to that file's panel.
@@ -112,28 +113,28 @@ The STFT uses a 2048-sample FFT with a 1024-sample hop and a Hann window, matchi
 
 ## Tech Stack
 
-| Layer     | Tech                                           |
-| --------- | ---------------------------------------------- |
-| Framework | SvelteKit 2.16+, TypeScript 5, Vite 6          |
-| Audio     | FFmpeg.wasm 0.12, Web Audio API, web workers   |
-| Viz       | D3.js 7.9 (scales/axes/line), Canvas2D heatmap |
-| Styling   | TailwindCSS 3.4, PostCSS, autoprefixer         |
-| Controls  | noUiSlider 15.8, svelte-dnd-action 0.9         |
-| Testing   | Vitest, librosa (Python, fixture parity)       |
+| Layer     | Tech                                                     |
+| --------- | -------------------------------------------------------- |
+| Framework | SvelteKit 2.16+, TypeScript 5, Vite 6                    |
+| Audio     | FFmpeg.wasm 0.12, Web Audio API, web workers             |
+| Viz       | D3.js 7.9 (scales/axes/line), Canvas2D heatmap           |
+| Styling   | TailwindCSS 3.4 (Vite plugin 4.x), PostCSS, autoprefixer |
+| Controls  | noUiSlider 15.8, svelte-dnd-action 0.9                   |
+| Testing   | Vitest, librosa (Python, fixture parity)                 |
 
 **Bundle:** roughly 30 MB (FFmpeg plus dependencies), loads in under 5 seconds on modern browsers.
 
 ## Dependencies
 
-Runtime dependencies are listed in the Tech Stack table above. Build and dev tooling adds ESLint 9, Prettier 3.4 (with `prettier-plugin-svelte` and `prettier-plugin-tailwindcss`), `svelte-check`, `gh-pages`, and `cross-env`. See [`package.json`](package.json) for the complete list with exact version ranges.
+Runtime dependencies are listed in the Tech Stack table above. Build and dev tooling adds ESLint 9, Prettier 3.4 (with `prettier-plugin-svelte` and `prettier-plugin-tailwindcss`), `svelte-check`, `gh-pages`, `cross-env`, plus `husky` and `lint-staged` for pre-commit formatting. See [`package.json`](package.json) for the complete list with exact version ranges.
 
 ## Local Setup
 
-These instructions are written for Ubuntu; the same `npm` commands work on macOS and Windows once Node 20+ is on `PATH`.
+These instructions are written for Ubuntu; the same `npm` commands work on macOS and Windows once Node 24+ is on `PATH`.
 
 ```bash
-# Install Node 20 (Ubuntu)
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# Install Node 24 (Ubuntu)
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt install -y nodejs
 
 # Install project dependencies

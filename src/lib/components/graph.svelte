@@ -10,6 +10,7 @@
 -->
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
+	import { base } from '$app/paths';
 	import { initFFmpeg } from '$lib/utils/audioProcessing';
 	import { extractWaveformData } from '$lib/utils/waveformData';
 	import { peekWavDuration, isLongDuration } from '$lib/utils/wavHeader';
@@ -134,6 +135,8 @@
 	// When false, spectrogram skips re-running STFT on slider tweaks. The
 	// Refresh button inside each spectrogram commits any pending changes.
 	let autoUpdateSpectrogram = true;
+	let autoUpdatePopoverOpen = false;
+	let autoUpdatePopoverEl: HTMLElement | undefined;
 
 	onMount(async () => {
 		try {
@@ -419,7 +422,21 @@
 	}
 </script>
 
-<svelte:window on:click={handleDownloadOutsideClick} />
+<svelte:window
+	on:click={(e) => {
+		handleDownloadOutsideClick(e);
+		if (
+			autoUpdatePopoverOpen &&
+			autoUpdatePopoverEl &&
+			!autoUpdatePopoverEl.contains(e.target as Node)
+		) {
+			autoUpdatePopoverOpen = false;
+		}
+	}}
+	on:keydown={(e) => {
+		if (autoUpdatePopoverOpen && e.key === 'Escape') autoUpdatePopoverOpen = false;
+	}}
+/>
 
 <div class="mb-6">
 	<Fileselector
@@ -509,21 +526,70 @@
 		/>
 
 		<div class="mt-6">
-			<Viewselector bind:showWaveform bind:showSpectrogram onChange={handleVisChange} />
-		</div>
+			<Viewselector bind:showWaveform bind:showSpectrogram onChange={handleVisChange}>
+				{#if showSpectrogram}
+					<div
+						bind:this={autoUpdatePopoverEl}
+						class="relative ml-auto inline-flex items-center gap-3 self-center rounded-full bg-gray-100 px-3 py-2"
+					>
+						<label class="inline-flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+							<span>Auto-update Spectrogram</span>
+							<span class="relative inline-block h-5 w-9">
+								<input
+									type="checkbox"
+									role="switch"
+									bind:checked={autoUpdateSpectrogram}
+									class="peer sr-only"
+									aria-label="Auto-update spectrogram on slider changes"
+								/>
+								<span
+									class="block h-5 w-9 rounded-full bg-gray-300 transition-colors peer-checked:bg-purple-600 peer-focus-visible:ring-2 peer-focus-visible:ring-purple-400"
+								></span>
+								<span
+									class="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"
+								></span>
+							</span>
+						</label>
 
-		{#if showSpectrogram}
-			<div class="mt-3 flex justify-end">
-				<label class="inline-flex cursor-pointer items-center gap-2 text-xs text-gray-700">
-					<input
-						type="checkbox"
-						bind:checked={autoUpdateSpectrogram}
-						class="h-4 w-4 cursor-pointer rounded border-gray-300 text-purple-600 focus:ring-2 focus:ring-purple-400"
-					/>
-					<span>Auto-update spectrogram on slider changes</span>
-				</label>
-			</div>
-		{/if}
+						<button
+							type="button"
+							aria-label="About auto-update spectrogram"
+							aria-expanded={autoUpdatePopoverOpen}
+							on:click={() => (autoUpdatePopoverOpen = !autoUpdatePopoverOpen)}
+							class="flex h-5 w-5 items-center justify-center rounded-full border border-gray-400 text-xs font-bold text-gray-500 transition hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+						>
+							?
+						</button>
+
+						{#if autoUpdatePopoverOpen}
+							<div
+								role="dialog"
+								aria-label="About auto-update spectrogram"
+								class="absolute right-0 top-full z-20 mt-2 w-72 rounded-lg bg-white p-3 text-xs text-gray-700 shadow-xl ring-1 ring-gray-200"
+							>
+								<p class="mb-2 font-semibold text-gray-800">
+									Auto-update spectrogram on slider drag.
+								</p>
+								<p class="mb-1">
+									<strong>On (default):</strong> recomputes the STFT for the new view. Slower, full detail,
+									best for downloads.
+								</p>
+								<p class="mb-2">
+									<strong>Off:</strong> zooms into the cached image. Near-instant, but close zoom may
+									look pixelated.
+								</p>
+								<a
+									href="{base}/faq#what-does-the-auto-update-spectrogram-toggle-do"
+									class="text-purple-600 underline hover:text-purple-800"
+								>
+									More in the FAQ →
+								</a>
+							</div>
+						{/if}
+					</div>
+				{/if}
+			</Viewselector>
+		</div>
 	{/if}
 
 	{#if showWaveform}
@@ -1008,6 +1074,30 @@
 									autoUpdate={autoUpdateSpectrogram}
 								>
 									<svelte:fragment slot="actions">
+										{#if !autoUpdateSpectrogram && showSlidersMap[audioFile.name] && showReset}
+											<button
+												type="button"
+												aria-label={`Refresh spectrogram for current view of ${audioFile.name}`}
+												title="Re-run STFT for the current view bounds"
+												class="flex items-center gap-1 rounded-md border border-amber-400 px-3 py-1 text-xs font-medium text-amber-700 transition hover:bg-amber-50"
+												on:click={() => spectrogramRefs[audioFile.name]?.refresh()}
+											>
+												<svg
+													aria-hidden="true"
+													class="h-3.5 w-3.5"
+													viewBox="0 0 16 16"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="1.75"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+												>
+													<path d="M13.5 8a5.5 5.5 0 1 1-1.611-3.889" />
+													<path d="M13.5 2.5v3h-3" />
+												</svg>
+												Refresh Graph
+											</button>
+										{/if}
 										{#if showSlidersMap[audioFile.name] && showReset}
 											<button
 												type="button"

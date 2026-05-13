@@ -36,6 +36,7 @@
 	export let audioDurationSec: number = 0;
 	export let hasRendered: boolean = false;
 	let container: HTMLDivElement;
+	const clipId = `clipWaveform-${Math.random().toString(36).slice(2)}`;
 
 	let elapsedMs = 0;
 	let progressInterval: ReturnType<typeof setInterval> | undefined;
@@ -193,7 +194,7 @@
 		svg
 			.append('defs')
 			.append('clipPath')
-			.attr('id', 'clipWaveform')
+			.attr('id', clipId)
 			.append('rect')
 			.attr('x', 0)
 			.attr('y', 0)
@@ -254,7 +255,7 @@
 			.attr('font-weight', 'bold')
 			.text(`${audioFileName.replace(/\.wav$/i, '')}: Waveform`);
 
-		const waveformGroup = g.append('g').attr('clip-path', 'url(#clipWaveform)');
+		const waveformGroup = g.append('g').attr('clip-path', `url(#${clipId})`);
 
 		waveformGroup
 			.append('path')
