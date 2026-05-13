@@ -10,6 +10,7 @@ Thanks for taking the time to contribute. BickGraphing is a small, single-purpos
 - [Pull requests](#pull-requests)
 - [Tests and fixtures](#tests-and-fixtures)
 - [Code style](#code-style)
+- [File headers](#file-headers)
 - [Code of Conduct](#code-of-conduct)
 
 ## Asking questions and reporting bugs
@@ -36,7 +37,7 @@ npm install
 npm run dev -- --open
 ```
 
-Node 20+ is required. Python (with the packages in `tests/requirements.txt`) is only needed if you plan to regenerate the librosa fixtures.
+Node 24+ is required. Python (with the packages in `tests/requirements.txt`) is only needed if you plan to regenerate the librosa fixtures.
 
 ## Development workflow
 
@@ -83,6 +84,21 @@ See [`tests/README.md`](../tests/README.md) for full details on test categories,
 - Formatting is enforced by Prettier (with `prettier-plugin-svelte` and `prettier-plugin-tailwindcss`); linting by ESLint. Run `npm run format` to auto-fix.
 - Prefer adding to existing components and utilities under `src/lib/` over creating parallel implementations.
 - Keep changes minimal and targeted. Avoid unrelated refactors in the same PR.
+
+## File headers
+
+Most source files in `src/` carry a small JSDoc-style header that identifies who wrote the file and when. The convention is:
+
+- `@author` is the current primary maintainer or implementer of the file. Update this when authorship has materially shifted, typically when a new author owns the majority of remaining lines.
+- `@contributors` lists substantial historical or original contributors. Add a name here when someone has contributed meaningful work that does not warrant `@author` status, or when authorship has changed and the previous author should still be credited.
+- Include `@contributors` only when there is at least one actual contributor to list. Omit the tag entirely if the file has a sole author.
+
+Svelte components use the `@component` form inside an HTML comment block; TypeScript files use `@file` inside a JSDoc block. Look at `src/lib/components/spectrogram.svelte` or `src/lib/utils/wavHeader.ts` for the exact shape.
+
+Some files intentionally have no header:
+
+- Framework boilerplate (`src/app.d.ts`, `src/lib/index.ts`).
+- Source-derived utilities adapted from textbook algorithms or external code (`src/lib/utils/fft.ts`, `src/lib/utils/audioProcessing.ts`).
 
 ## Code of Conduct
 

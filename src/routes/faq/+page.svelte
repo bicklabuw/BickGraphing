@@ -2,8 +2,8 @@
   @component
   Description: Frequently asked questions page covering usage, supported formats, and citation details.
 
-  @author Grace Steinmetz <gesparkles@gmail.com>
-  @contributors K. Seow <kseow@wisc.edu>
+  @author K. Seow <kseow@wisc.edu>
+  @contributors Grace Steinmetz <gesparkles@gmail.com>
   @created 2025-05-30
   @version 0.2.0
   @license MIT

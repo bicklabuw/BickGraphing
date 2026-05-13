@@ -5,7 +5,6 @@
   and reports per-machine results in a fresh markdown table each run. No data is persisted.
 
   @author K. Seow <kseow@wisc.edu>
-  @contributors
   @created 2026-05-07
   @version 0.2.0
   @license MIT

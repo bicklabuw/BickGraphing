@@ -2,9 +2,8 @@
   @component
   Description: Main graphing orchestrator — loads audio files, initializes FFmpeg, and renders waveform and spectrogram views with shared controls.
 
-  @author Grace Steinmetz <gesparkles@gmail.com>
   @author K. Seow <kseow@wisc.edu>
-  @contributors Alex Arovas <aarovas@wisc.edu>
+  @contributors Grace Steinmetz <gesparkles@gmail.com>, Alex Arovas <aarovas@wisc.edu>
   @created 2025-05-30
   @version 0.2.0
   @license MIT
@@ -132,6 +131,9 @@
 	let showSlidersMap: Record<string, boolean> = {};
 	let showReset = true;
 	let showDownload = true;
+	// When false, spectrogram skips re-running STFT on slider tweaks. The
+	// Refresh button inside each spectrogram commits any pending changes.
+	let autoUpdateSpectrogram = true;
 
 	onMount(async () => {
 		try {
@@ -509,6 +511,19 @@
 		<div class="mt-6">
 			<Viewselector bind:showWaveform bind:showSpectrogram onChange={handleVisChange} />
 		</div>
+
+		{#if showSpectrogram}
+			<div class="mt-3 flex justify-end">
+				<label class="inline-flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+					<input
+						type="checkbox"
+						bind:checked={autoUpdateSpectrogram}
+						class="h-4 w-4 cursor-pointer rounded border-gray-300 text-purple-600 focus:ring-2 focus:ring-purple-400"
+					/>
+					<span>Auto-update spectrogram on slider changes</span>
+				</label>
+			</div>
+		{/if}
 	{/if}
 
 	{#if showWaveform}
@@ -990,6 +1005,7 @@
 									endTime={timeRangeMap[audioFile.name]?.end ?? 10}
 									minFreq={freqRangeMap[audioFile.name]?.min ?? 0}
 									maxFreq={freqRangeMap[audioFile.name]?.max ?? Math.min(3000, NYQUIST_HZ)}
+									autoUpdate={autoUpdateSpectrogram}
 								>
 									<svelte:fragment slot="actions">
 										{#if showSlidersMap[audioFile.name] && showReset}
