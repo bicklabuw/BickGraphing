@@ -30,6 +30,17 @@
 	export let minFreq = 0;
 	export let maxFreq = 3000;
 	export let computedHeight: number = 400;
+	// When false, slider-driven param changes do not re-run the STFT pipeline.
+	// Instead, the cached spectrogram is re-rendered with the new view bounds —
+	// the time slider becomes a zoom into the cached time range, freq slider
+	// zooms within the cached frequency content. Re-checking the box (or first
+	// render / file swap) triggers a fresh STFT.
+	export let autoUpdate: boolean = true;
+
+	// Time range the current logMagCache covers (set after each STFT run).
+	// Used by drawSpectrogram to map view bounds back to cached frame indices.
+	let cachedStart = 0;
+	let cachedEnd = 0;
 
 	let container: HTMLDivElement;
 	let _status = 'Waiting...';
@@ -220,6 +231,20 @@
 		if (observer && container) observer.unobserve(container);
 	});
 
+	function kickoffGeneration() {
+		lastStart = startTime;
+		lastEnd = endTime;
+		lastMinFreq = minFreq;
+		lastMaxFreq = maxFreq;
+		lastInput = inputFileName;
+
+		if (debounceTimer) clearTimeout(debounceTimer);
+		const wait = $spectrogramBusy ? DEBOUNCE_BUSY_MS : DEBOUNCE_IDLE_MS;
+		debounceTimer = setTimeout(() => {
+			generateSpectrogram();
+		}, wait);
+	}
+
 	$: if (ffmpeg && inputFileName) {
 		if (
 			startTime !== lastStart ||
@@ -228,17 +253,17 @@
 			maxFreq !== lastMaxFreq ||
 			inputFileName !== lastInput
 		) {
-			lastStart = startTime;
-			lastEnd = endTime;
-			lastMinFreq = minFreq;
-			lastMaxFreq = maxFreq;
-			lastInput = inputFileName;
-
-			if (debounceTimer) clearTimeout(debounceTimer);
-			const wait = $spectrogramBusy ? DEBOUNCE_BUSY_MS : DEBOUNCE_IDLE_MS;
-			debounceTimer = setTimeout(() => {
-				generateSpectrogram();
-			}, wait);
+			// First render and file swaps always recompute. Otherwise, autoUpdate
+			// decides: on → recompute STFT for the new bounds; off → just re-draw
+			// the cached spectrogram, treating the slider change as a zoom. We
+			// deliberately do NOT update last* in the zoom path, so re-enabling
+			// auto-update (or hitting any subsequent change with it on) will
+			// re-fire this block and recompute against the current bounds.
+			if (autoUpdate || !hasRendered || inputFileName !== lastInput) {
+				kickoffGeneration();
+			} else if (logMagCache) {
+				drawSpectrogram(logMagCache, sampleRateCache);
+			}
 		}
 	}
 
@@ -350,6 +375,8 @@
 
 			logMagCache = logMag;
 			sampleRateCache = sampleRate;
+			cachedStart = startTime;
+			cachedEnd = endTime;
 
 			progressPct = 92;
 
@@ -589,6 +616,15 @@
 		const freqRange = maxFreq - minFreq;
 		const lutMaxIdx = LUT_SIZE - 1;
 
+		// Map current view bounds back to cached frame indices. When the view
+		// matches the cache (auto-update on, or just after STFT), this collapses
+		// to the identity mapping. When the user has dragged the time slider
+		// with auto-update off, this picks the right sub-range of cached frames.
+		const cacheSpan = cachedEnd - cachedStart || 1;
+		const frameStartF = ((startTime - cachedStart) / cacheSpan) * nFrames;
+		const frameEndF = ((endTime - cachedStart) / cacheSpan) * nFrames;
+		const frameSpan = frameEndF - frameStartF || 1;
+
 		for (let py = 0; py < height; py++) {
 			// y inverted: top of canvas = high freq.
 			const freq = minFreq + (1 - py / (height - 1)) * freqRange;
@@ -598,7 +634,8 @@
 			if (bin < 0 || bin >= binCount) continue;
 
 			for (let px = 0; px < width; px++) {
-				const frame = Math.min(nFrames - 1, Math.floor((px / width) * nFrames));
+				const frameF = frameStartF + (px / width) * frameSpan;
+				const frame = Math.max(0, Math.min(nFrames - 1, Math.floor(frameF)));
 				const mag = data[frame][bin];
 				const t = (mag - domainMin) / domainSpan;
 				const lutIdx = Math.max(0, Math.min(lutMaxIdx, Math.floor(t * lutMaxIdx))) * 3;
@@ -612,7 +649,9 @@
 
 		ctx.putImageData(imgData, 0, 0);
 
-		const timeScale = d3.scaleLinear().domain([0, nFrames]).range([0, width]);
+		// X-axis is a time scale over the current view bounds (not the cached
+		// range), so axis labels always reflect what the user sees.
+		const timeScale = d3.scaleLinear().domain([startTime, endTime]).range([0, width]);
 		const freqScale = d3.scaleLinear().domain([minFreq, maxFreq]).range([height, 0]);
 		const colorScale = d3.scaleSequential(d3.interpolateTurbo).domain(colorDomain);
 
@@ -628,7 +667,7 @@
 		const xAxis = d3
 			.axisBottom(timeScale)
 			.ticks(10)
-			.tickFormat((d) => `${(startTime + ((endTime - startTime) * +d) / nFrames).toFixed(1)}`);
+			.tickFormat((d) => `${(+d).toFixed(1)}`);
 		svg
 			.append('g')
 			.attr('transform', `translate(0, ${height})`)
