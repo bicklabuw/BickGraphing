@@ -40,38 +40,7 @@
 		<div class="text-center md:text-left">
 			<p class="font-semibold text-gray-800">BickGraphing</p>
 			<p>&copy; {new Date().getFullYear()} Bick Lab, University of Wisconsin–Madison</p>
-			<p class="mt-1 text-xs text-gray-500">
-				Version 0.2.0 &mdash; By <a
-					href="https://github.com/kayleyseow"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="transition hover:text-green-600">K. Seow</a
-				>
-			</p>
-			<p class="text-xs text-gray-500">
-				<a
-					href="https://ie-graphing-709865.pages.doit.wisc.edu"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="transition hover:text-green-600"
-				>
-					Version 0.1.0
-				</a>
-				&mdash; Designed by
-				<a
-					href="https://www.gracesteinmetz.com"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="transition hover:text-green-600">Grace Steinmetz</a
-				>
-				&
-				<a
-					href="https://github.com/Alex-Arovas"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="transition hover:text-green-600">Alex Arovas</a
-				>
-			</p>
+			<p class="mt-1 text-xs text-gray-500">Version 0.2.0</p>
 		</div>
 
 		<div class="flex flex-wrap items-center justify-center gap-4">
@@ -118,14 +87,6 @@
 			>
 				Insect Eavesdropper
 			</a>
-			<!-- <a
-				href="https://connect.doit.wisc.edu/bickportal/"
-				target="_blank"
-				rel="noopener noreferrer"
-				class="transition hover:text-green-600"
-			>
-				Bick Portal
-			</a> -->
 		</div>
 	</div>
 </footer>
