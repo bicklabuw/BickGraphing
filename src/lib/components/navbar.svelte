@@ -64,7 +64,6 @@
 			</a>
 
 			<!-- External Links -->
-			<!-- { label: 'Bick Portal', href: 'https://connect.doit.wisc.edu/bickportal/' } -->
 			{#each [{ label: 'Bick Lab', href: 'https://www.bicklab.com' }, { label: 'Insect Eavesdropper', href: 'https://www.insecteavesdropper.com/home' }] as link (link.label)}
 				<a
 					href={link.href}
