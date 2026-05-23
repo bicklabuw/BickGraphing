@@ -38,6 +38,8 @@ src/lib/components/original_spectrogram.svelte
 # Python
 __pycache__/
 *.pyc
+.venv/
+.python-version
 
 # Personal scratch area
 workingbranch/
